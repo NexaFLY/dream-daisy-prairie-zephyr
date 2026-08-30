@@ -9,6 +9,7 @@ import {
   Market,
   Mission,
   Network,
+  NusdMarket,
   Problem,
   Projects,
   Team,
@@ -16,12 +17,12 @@ import {
   Transparency,
 } from "@/components/sections";
 import { listAssociations } from "@/lib/associations";
-import { getMarket } from "@/lib/market";
+import { getMarket, getNusdMarket } from "@/lib/market";
 import { fetchFlyQuote, type FlyQuote } from "@/lib/swap-quote";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const quote = await getMarket();
+    const [quote, nusdQuote] = await Promise.all([getMarket(), getNusdMarket()]);
     let orgs: Awaited<ReturnType<typeof listAssociations>> = [];
     try {
       orgs = await listAssociations();
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/")({
     } catch {
       flyQuote = null;
     }
-    return { quote, orgs, flyQuote };
+    return { quote, nusdQuote, orgs, flyQuote };
   },
   component: Home,
 });
@@ -43,17 +44,19 @@ function Home() {
   const data = Route.useLoaderData();
   return (
     <AppFrame>
-      <HomeContent quote={data.quote} orgs={data.orgs} flyQuote={data.flyQuote} />
+      <HomeContent quote={data.quote} nusdQuote={data.nusdQuote} orgs={data.orgs} flyQuote={data.flyQuote} />
     </AppFrame>
   );
 }
 
 function HomeContent({
   quote,
+  nusdQuote,
   orgs,
   flyQuote,
 }: {
   quote: ReturnType<typeof Route.useLoaderData>["quote"];
+  nusdQuote: ReturnType<typeof Route.useLoaderData>["nusdQuote"];
   orgs: ReturnType<typeof Route.useLoaderData>["orgs"];
   flyQuote: FlyQuote | null;
 }) {
@@ -66,6 +69,7 @@ function HomeContent({
       <Mission />
       <Network orgs={orgs} />
       <Market quote={quote} />
+      <NusdMarket quote={nusdQuote} />
       <SwapSection initialQuote={flyQuote} priceUsd={quote?.priceUsd} />
       <Token />
       <Transparency onDonate={onDonate} />

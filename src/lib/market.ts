@@ -40,10 +40,11 @@ export type MarketQuote = {
 };
 
 const USDC = SITE.usdcMint.toLowerCase();
+const USDT = SITE.usdtMint.toLowerCase();
 const TTL_MS = 45_000;
 const HOUR = 3600;
 
-let memo: { at: number; value: MarketQuote | null } | null = null;
+const memo = new Map<string, { at: number; value: MarketQuote | null }>();
 
 type DexPair = {
   chainId?: string;
@@ -58,7 +59,19 @@ type DexPair = {
   priceChange?: { h24?: number };
   txns?: { h24?: { buys?: number; sells?: number } };
   quoteToken?: { address?: string; symbol?: string };
+  baseToken?: { address?: string; symbol?: string };
 };
+
+function addrOf(token?: { address?: string }) {
+  return token?.address?.toLowerCase() ?? "";
+}
+
+function otherSymbol(p: DexPair, mint: string) {
+  const m = mint.toLowerCase();
+  if (addrOf(p.baseToken) === m) return p.quoteToken?.symbol ?? "—";
+  if (addrOf(p.quoteToken) === m) return p.baseToken?.symbol ?? "—";
+  return p.quoteToken?.symbol ?? p.baseToken?.symbol ?? "—";
+}
 
 async function getJson<T>(url: string): Promise<T | null> {
   try {
@@ -124,15 +137,15 @@ function candlesFromTrades(raw: unknown): Candle[] {
   return [...buckets.values()].sort((a, b) => a.t - b.t);
 }
 
-async function loadCandles(): Promise<Candle[]> {
+async function loadCandles(pool: string): Promise<Candle[]> {
   const ohlcv = await getJson(
-    `https://api.geckoterminal.com/api/v2/networks/solana/pools/${SITE.usdcPair}/ohlcv/hour?aggregate=1&limit=72`,
+    `https://api.geckoterminal.com/api/v2/networks/solana/pools/${pool}/ohlcv/hour?aggregate=1&limit=72`,
   );
   const fromOhlcv = parseOhlcv(ohlcv);
   if (fromOhlcv.length >= 8) return fromOhlcv;
 
   const trades = await getJson(
-    `https://api.geckoterminal.com/api/v2/networks/solana/pools/${SITE.usdcPair}/trades?trade_volume_in_usd_greater_than=0`,
+    `https://api.geckoterminal.com/api/v2/networks/solana/pools/${pool}/trades?trade_volume_in_usd_greater_than=0`,
   );
   return candlesFromTrades(trades);
 }
@@ -151,22 +164,30 @@ function changeFromCandles(candles: Candle[]) {
   return ((last.c - then.o) / then.o) * 100;
 }
 
-async function loadMarket(): Promise<MarketQuote | null> {
+async function loadTokenMarket(opts: {
+  mint: string;
+  candlePool: string;
+  solscanUrl: string;
+}): Promise<MarketQuote | null> {
+  const mint = opts.mint.toLowerCase();
   const [dex, candles] = await Promise.all([
     getJson<{ pairs?: DexPair[] }>(
-      `https://api.dexscreener.com/latest/dex/tokens/${SITE.mint}`,
+      `https://api.dexscreener.com/latest/dex/tokens/${opts.mint}`,
     ),
-    loadCandles(),
+    loadCandles(opts.candlePool),
   ]);
 
   const pairs = (dex?.pairs ?? []).filter((p) => p.chainId === "solana" && p.priceUsd);
   if (!pairs.length && !candles.length) return null;
 
-  const usdcPairs = pairs.filter((p) => p.quoteToken?.address?.toLowerCase() === USDC);
-  const byLiq = [...pairs].sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0));
+  const asBase = pairs.filter((p) => addrOf(p.baseToken) === mint);
+  const stable = asBase.filter((p) => [USDC, USDT].includes(addrOf(p.quoteToken)));
+  const byLiq = [...(asBase.length ? asBase : pairs)].sort(
+    (a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0),
+  );
   const byVol = [...pairs].sort((a, b) => (b.volume?.h24 ?? 0) - (a.volume?.h24 ?? 0));
   const priced =
-    [...usdcPairs].sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0))[0] ??
+    [...stable].sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0))[0] ??
     byLiq[0];
 
   const lastClose = candles.at(-1)?.c;
@@ -182,9 +203,9 @@ async function loadMarket(): Promise<MarketQuote | null> {
   }, 0);
   const dexes = [...new Set(pairs.map((p) => p.dexId).filter(Boolean))] as string[];
 
-  const pools: MarketPool[] = byVol.slice(0, 8).map((p) => ({
+  const pools: MarketPool[] = byVol.map((p) => ({
     dex: p.dexId ?? "raydium",
-    quote: p.quoteToken?.symbol ?? "—",
+    quote: otherSymbol(p, opts.mint),
     volume: p.volume?.h24 ?? 0,
     liquidity: p.liquidity?.usd ?? 0,
     url: p.url ?? SITE.dexscreener,
@@ -199,7 +220,7 @@ async function loadMarket(): Promise<MarketQuote | null> {
     dex: dexes.join(" · ") || "raydium",
     txns,
     pairUrl: priced?.url ?? SITE.dexscreener,
-    solscanUrl: SITE.solscanToken,
+    solscanUrl: opts.solscanUrl,
     fdv: Number(priced?.fdv ?? priced?.marketCap ?? 0) || 0,
     candles,
     windows: [
@@ -212,9 +233,30 @@ async function loadMarket(): Promise<MarketQuote | null> {
   };
 }
 
-export const getMarket = createServerFn({ method: "GET" }).handler(async () => {
-  if (memo && Date.now() - memo.at < TTL_MS) return memo.value;
-  const value = await loadMarket();
-  memo = { at: Date.now(), value };
+async function cached(key: string, load: () => Promise<MarketQuote | null>) {
+  const hit = memo.get(key);
+  if (hit && Date.now() - hit.at < TTL_MS) return hit.value;
+  const value = await load();
+  memo.set(key, { at: Date.now(), value });
   return value;
+}
+
+export const getMarket = createServerFn({ method: "GET" }).handler(async () => {
+  return cached("fly", () =>
+    loadTokenMarket({
+      mint: SITE.mint,
+      candlePool: SITE.usdcPair,
+      solscanUrl: SITE.solscanToken,
+    }),
+  );
+});
+
+export const getNusdMarket = createServerFn({ method: "GET" }).handler(async () => {
+  return cached("nusd", () =>
+    loadTokenMarket({
+      mint: SITE.nusdMint,
+      candlePool: SITE.nusdUsdcPair,
+      solscanUrl: SITE.solscanNusd,
+    }),
+  );
 });

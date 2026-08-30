@@ -4,7 +4,9 @@ export const SITE = {
   usdcMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
   nusdMint: "711P4haqL2hzDA1KrfWST5QFdigDRymQoLxDGfMGqcDx",
   solMint: "So11111111111111111111111111111111111111112",
+  usdtMint: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
   usdcPair: "pyWjZqkApxm9kXDwroHDrXdHKH2fRCbrp5CUHQts8hh",
+  nusdUsdcPair: "HDqnZQk6HskaLpgwutAaBfYeZDCLJXEMRf3GB1kEbvhk",
   wallet: "bosnEo1BZdm3M9mHu9NdeWkuBwDuvtF7wJ3Eo7gmhwT",
   rna: "W131019858",
   siren: "101736536",
@@ -38,6 +40,8 @@ export const SITE = {
     "https://solscan.io/account/bosnEo1BZdm3M9mHu9NdeWkuBwDuvtF7wJ3Eo7gmhwT",
   dexscreener:
     "https://dexscreener.com/solana/pywjzqkapxm9kxdwrohdrxdhkh2frcbrp5cuhqts8hh",
+  dexscreenerNusd:
+    "https://dexscreener.com/solana/hdqnzqk6hskalpgwutaabfyebzdcljxemrf3gb1kebvhk",
   chartEmbed:
     "https://dexscreener.com/solana/pywjzqkapxm9kxdwrohdrxdhkh2frcbrp5cuhqts8hh?embed=1&loadChartSettings=0&trades=0&tabs=0&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=dark&theme=dark&chartStyle=1&chartType=usd&interval=15",
   whitepaper: "/whitepaper",

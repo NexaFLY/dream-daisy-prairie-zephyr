@@ -93,7 +93,7 @@ export const copy = {
     market: {
       tag: "En direct",
       title: "FLY, tous les pools.",
-      lead: "Prix, volumes et liquidité additionnés sur toutes les paires (USDC, SOL, nUSD, JUP, USDT) — comme sur Solscan.",
+      lead: "Prix, volumes et liquidité additionnés sur toutes les paires (USDC, SOL, nUSD, JUP, USDT).",
       price: "Prix",
       liq: "Liquidité",
       vol: "Volume 24h",
@@ -112,6 +112,13 @@ export const copy = {
       vol1h: "1h",
       vol6h: "6h",
       vol24h: "24h",
+    },
+    nusdMarket: {
+      tag: "Stabilité",
+      title: "nUSD, autour de 1 $.",
+      lead: "Prix, volume et liquidité de tous les pools nUSD — USDC, USDT, SOL, Bonk, FLY.",
+      chart: "Peg nUSD · 1h",
+      swap: "Swap USDC → nUSD",
     },
     token: {
       tag: "FLY",
@@ -251,7 +258,7 @@ export const copy = {
         },
         {
           title: "Liquidité",
-          body: "Les pools nUSD / FLY existent. Le carnet public du site, lui, lit FLY / USDC — le marché le plus profond en volume.",
+          body: "Les pools nUSD / FLY, USDC, USDT et SOL sont publics. Le peg et les volumes sont affichés ici, pool par pool.",
         },
         {
           title: "Trésorerie",
@@ -652,7 +659,7 @@ export const copy = {
     market: {
       tag: "Live",
       title: "FLY, every pool.",
-      lead: "Price, volume and liquidity summed across all pairs (USDC, SOL, nUSD, JUP, USDT) — same picture as Solscan.",
+      lead: "Price, volume and liquidity summed across all pairs (USDC, SOL, nUSD, JUP, USDT).",
       price: "Price",
       liq: "Liquidity",
       vol: "24h volume",
@@ -671,6 +678,13 @@ export const copy = {
       vol1h: "1h",
       vol6h: "6h",
       vol24h: "24h",
+    },
+    nusdMarket: {
+      tag: "Stability",
+      title: "nUSD, around $1.",
+      lead: "Price, volume and liquidity across every nUSD pool — USDC, USDT, SOL, Bonk, FLY.",
+      chart: "nUSD peg · 1h",
+      swap: "Swap USDC → nUSD",
     },
     token: {
       tag: "FLY",
@@ -810,7 +824,7 @@ export const copy = {
         },
         {
           title: "Liquidity",
-          body: "nUSD / FLY pools exist. The public book on this site reads FLY / USDC — the pair with the meaningful volume.",
+          body: "nUSD / FLY, USDC, USDT and SOL pools are public. Peg and volumes are shown here, pool by pool.",
         },
         {
           title: "Treasury",

@@ -2,6 +2,7 @@ import {
   Area,
   Bar,
   ComposedChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -19,7 +20,15 @@ function hourLabel(ts: number, lang: string) {
   });
 }
 
-export function PriceVolumeChart({ data }: { data: Candle[] }) {
+export function PriceVolumeChart({
+  data,
+  compact = false,
+  peg = false,
+}: {
+  data: Candle[];
+  compact?: boolean;
+  peg?: boolean;
+}) {
   const { lang, t } = useI18n();
   if (!data.length) {
     return <p className="py-10 text-center text-sm text-muted">{t.market.error}</p>;
@@ -29,13 +38,20 @@ export function PriceVolumeChart({ data }: { data: Candle[] }) {
     ...c,
     label: hourLabel(c.t, lang),
   }));
+  const fillId = peg ? "nusdPriceFill" : "flyPriceFill";
+  const prices = rows.map((r) => r.c).filter(Number.isFinite);
+  const lo = prices.length ? Math.min(...prices) : 0.97;
+  const hi = prices.length ? Math.max(...prices) : 1.03;
+  const domain = peg
+    ? [Math.min(0.97, lo * 0.998), Math.max(1.03, hi * 1.002)]
+    : (["auto", "auto"] as const);
 
   return (
-    <div className="h-72 w-full">
+    <div className={compact ? "h-28 w-full" : "h-72 w-full"}>
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="flyPriceFill" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.38} />
               <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
             </linearGradient>
@@ -45,7 +61,7 @@ export function PriceVolumeChart({ data }: { data: Candle[] }) {
             tick={{ fill: "var(--color-faint)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
-            minTickGap={48}
+            minTickGap={compact ? 64 : 48}
           />
           <YAxis
             yAxisId="price"
@@ -55,9 +71,18 @@ export function PriceVolumeChart({ data }: { data: Candle[] }) {
             tickLine={false}
             tickFormatter={(v: number) => formatPrice(v)}
             width={64}
-            domain={["auto", "auto"]}
+            domain={domain}
           />
           <YAxis yAxisId="vol" orientation="right" hide domain={[0, "auto"]} />
+          {peg ? (
+            <ReferenceLine
+              yAxisId="price"
+              y={1}
+              stroke="var(--color-amber)"
+              strokeDasharray="4 4"
+              strokeOpacity={0.7}
+            />
+          ) : null}
           <Tooltip
             cursor={{ stroke: "var(--color-primary)", strokeOpacity: 0.35 }}
             contentStyle={{
@@ -80,7 +105,7 @@ export function PriceVolumeChart({ data }: { data: Candle[] }) {
             fill="var(--color-amber)"
             fillOpacity={0.28}
             radius={[4, 4, 0, 0]}
-            maxBarSize={18}
+            maxBarSize={compact ? 10 : 18}
           />
           <Area
             yAxisId="price"
@@ -88,7 +113,7 @@ export function PriceVolumeChart({ data }: { data: Candle[] }) {
             dataKey="c"
             stroke="var(--color-primary)"
             strokeWidth={2}
-            fill="url(#flyPriceFill)"
+            fill={`url(#${fillId})`}
             dot={false}
             activeDot={{ r: 3, fill: "var(--color-primary)" }}
           />

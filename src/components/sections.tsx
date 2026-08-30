@@ -343,6 +343,122 @@ function Stat({
   );
 }
 
+export function NusdMarket({
+  quote,
+  bare = false,
+}: {
+  quote: MarketQuote | null;
+  bare?: boolean;
+}) {
+  const { t } = useI18n();
+  const c = t.nusdMarket;
+  const market = quote;
+
+  return (
+    <section id="nusd-market" className={cn("mx-auto max-w-6xl scroll-mt-24", bare ? "pt-10 pb-6" : "px-5 pb-20")}>
+      {bare ? null : <Header tag={c.tag} title={c.title} lead={c.lead} />}
+      <div className={cn("rounded-xl bg-surface p-6 shadow-[0_0_0_1px_rgba(244,236,223,0.08)] md:p-8", !bare && "mt-10")}>
+        {market ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <Stat label={t.market.price} value={formatPrice(market.priceUsd)} />
+            <Stat
+              label={t.market.change}
+              value={formatPct(market.change)}
+              tone={Math.abs(market.change) < 0.5 ? "up" : market.change >= 0 ? "up" : "down"}
+            />
+            <Stat label={t.market.vol} value={formatUsd(market.volume)} />
+            <Stat label={t.market.liq} value={formatUsd(market.liquidity)} />
+            <Stat label={t.market.txns} value={market.txns ? market.txns.toLocaleString("en-US") : "—"} />
+          </div>
+        ) : (
+          <p className="text-sm text-muted">{t.market.error}</p>
+        )}
+
+        <div className="mt-6 overflow-hidden rounded-lg bg-bg p-4 shadow-[0_0_0_1px_rgba(244,236,223,0.08)]">
+          <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
+            {c.chart}
+          </p>
+          {market ? <PriceVolumeChart data={market.candles} compact peg /> : null}
+          {market ? (
+            <div className="mt-4 grid grid-cols-4 gap-2">
+              {market.windows.map((w) => (
+                <div key={w.key} className="rounded-sm bg-surface px-2 py-2 text-center">
+                  <p className="font-mono text-[0.65rem] tracking-widest text-faint uppercase">
+                    {t.market[VOL_LABEL[w.key]]}
+                  </p>
+                  <p className="mt-1 font-mono text-xs tabular-nums">{formatUsd(w.value)}</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          <a
+            href={market?.solscanUrl ?? SITE.solscanNusd}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(buttonVariants({ variant: "ghost" }))}
+          >
+            {t.market.openSolscan} <ArrowUpRight className="size-4" />
+          </a>
+          <a
+            href={market?.pairUrl ?? SITE.dexscreenerNusd}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(buttonVariants({ variant: "ghost" }))}
+          >
+            {t.market.openDex} <ArrowUpRight className="size-4" />
+          </a>
+          <a
+            href={SITE.jupiterNusd}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(buttonVariants({ variant: "primary" }))}
+          >
+            {c.swap} <ArrowUpRight className="size-4" />
+          </a>
+        </div>
+
+        {market?.pools?.length ? (
+          <div className="mt-6">
+            <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
+              {t.market.pools}
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {market.pools.map((pool) => (
+                <a
+                  key={`${pool.dex}-${pool.quote}-${pool.url}`}
+                  href={pool.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between rounded-md bg-bg px-3 py-2 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.35)]"
+                >
+                  <span>
+                    <span className="block text-sm font-semibold">nUSD / {pool.quote}</span>
+                    <span className="font-mono text-[0.65rem] tracking-widest text-faint uppercase">
+                      {pool.dex}
+                    </span>
+                  </span>
+                  <span className="text-right">
+                    <span className="block font-mono text-xs tabular-nums">{formatUsd(pool.volume)}</span>
+                    <span className="font-mono text-[0.65rem] text-faint">{formatUsd(pool.liquidity)}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : null}
+        {market ? (
+          <p className="mt-4 font-mono text-xs text-faint uppercase">
+            {t.market.pair} · {market.pair} · {market.dex}
+          </p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 export function Token() {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);

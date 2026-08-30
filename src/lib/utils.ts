@@ -20,6 +20,7 @@ export function formatUsd(n: number) {
 
 export function formatPrice(n: number) {
   if (!Number.isFinite(n) || n <= 0) return "—";
+  if (n >= 0.95 && n <= 1.05) return `$${n.toFixed(4)}`;
   if (n >= 1) return `$${n.toFixed(2)}`;
   return `$${n.toFixed(5)}`;
 }

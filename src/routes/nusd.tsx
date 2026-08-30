@@ -2,13 +2,24 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { AppFrame } from "@/components/app-frame";
+import { NusdMarket } from "@/components/sections";
 import { ConnectPanel } from "@/components/wallet-connect";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
+import { getNusdMarket } from "@/lib/market";
 import { useI18n } from "@/lib/i18n";
 import { cn, copyText } from "@/lib/utils";
 
 export const Route = createFileRoute("/nusd")({
+  loader: async () => {
+    let quote = null;
+    try {
+      quote = await getNusdMarket();
+    } catch {
+      quote = null;
+    }
+    return { quote };
+  },
   component: NusdPage,
   head: () => ({
     meta: [{ title: "nUSD — Nexa FLY" }],
@@ -18,6 +29,7 @@ export const Route = createFileRoute("/nusd")({
 function NusdPage() {
   const { t } = useI18n();
   const c = t.nusdPage;
+  const { quote } = Route.useLoaderData();
   const [copied, setCopied] = useState(false);
 
   async function onCopy() {
@@ -104,6 +116,8 @@ function NusdPage() {
             </Button>
           </article>
         </div>
+
+        <NusdMarket quote={quote} bare />
 
         <ConnectPanel className="mt-10" />
 
