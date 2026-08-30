@@ -34,6 +34,10 @@ export type MarketQuote = {
   pairUrl: string;
   solscanUrl: string;
   fdv: number;
+  holders: number;
+  traders: number;
+  mintDisabled: boolean;
+  freezeDisabled: boolean;
   candles: Candle[];
   windows: VolumeWindow[];
   pools: MarketPool[];
@@ -164,17 +168,48 @@ function changeFromCandles(candles: Candle[]) {
   return ((last.c - then.o) / then.o) * 100;
 }
 
+type JupToken = {
+  id?: string;
+  usdPrice?: number;
+  mcap?: number;
+  fdv?: number;
+  liquidity?: number;
+  holderCount?: number;
+  circSupply?: number;
+  stats24h?: {
+    buyVolume?: number;
+    sellVolume?: number;
+    numBuys?: number;
+    numSells?: number;
+    numTraders?: number;
+    priceChange?: number;
+  };
+  audit?: {
+    mintAuthorityDisabled?: boolean;
+    freezeAuthorityDisabled?: boolean;
+  };
+};
+
+async function loadJupToken(mint: string): Promise<JupToken | null> {
+  const rows = await getJson<JupToken[]>(
+    `https://lite-api.jup.ag/tokens/v2/search?query=${mint}`,
+  );
+  const hit = (rows ?? []).find((t) => (t.id ?? "").toLowerCase() === mint.toLowerCase());
+  return hit ?? null;
+}
+
 async function loadTokenMarket(opts: {
   mint: string;
   candlePool: string;
   solscanUrl: string;
 }): Promise<MarketQuote | null> {
   const mint = opts.mint.toLowerCase();
-  const [dex, candles] = await Promise.all([
+  const [dex, candles, jup] = await Promise.all([
     getJson<{ pairs?: DexPair[] }>(
       `https://api.dexscreener.com/latest/dex/tokens/${opts.mint}`,
     ),
     loadCandles(opts.candlePool),
+    loadJupToken(opts.mint),
   ]);
 
   const pairs = (dex?.pairs ?? []).filter((p) => p.chainId === "solana" && p.priceUsd);
@@ -191,16 +226,19 @@ async function loadTokenMarket(opts: {
     byLiq[0];
 
   const lastClose = candles.at(-1)?.c;
-  const priceUsd = Number(priced?.priceUsd ?? lastClose ?? 0);
+  const priceUsd = Number(priced?.priceUsd ?? jup?.usdPrice ?? lastClose ?? 0);
+  const jupVol = (jup?.stats24h?.buyVolume ?? 0) + (jup?.stats24h?.sellVolume ?? 0);
+  const jupTx = (jup?.stats24h?.numBuys ?? 0) + (jup?.stats24h?.numSells ?? 0);
 
   const volOf = (key: "m5" | "h1" | "h6" | "h24") =>
     pairs.reduce((s, p) => s + (p.volume?.[key] ?? 0), 0);
-  const volume = volOf("h24") || sumVolume(candles, 24);
-  const liquidity = pairs.reduce((s, p) => s + (p.liquidity?.usd ?? 0), 0);
-  const txns = pairs.reduce((s, p) => {
-    const t = p.txns?.h24;
-    return s + (t?.buys ?? 0) + (t?.sells ?? 0);
-  }, 0);
+  const volume = volOf("h24") || jupVol || sumVolume(candles, 24);
+  const liquidity = pairs.reduce((s, p) => s + (p.liquidity?.usd ?? 0), 0) || jup?.liquidity || 0;
+  const txns =
+    pairs.reduce((s, p) => {
+      const t = p.txns?.h24;
+      return s + (t?.buys ?? 0) + (t?.sells ?? 0);
+    }, 0) || jupTx;
   const dexes = [...new Set(pairs.map((p) => p.dexId).filter(Boolean))] as string[];
 
   const pools: MarketPool[] = byVol.map((p) => ({
@@ -215,13 +253,17 @@ async function loadTokenMarket(opts: {
     priceUsd,
     liquidity,
     volume,
-    change: priced?.priceChange?.h24 || changeFromCandles(candles),
+    change: priced?.priceChange?.h24 || jup?.stats24h?.priceChange || changeFromCandles(candles),
     pair: `${pairs.length} pools`,
     dex: dexes.join(" · ") || "raydium",
     txns,
     pairUrl: priced?.url ?? SITE.dexscreener,
     solscanUrl: opts.solscanUrl,
-    fdv: Number(priced?.fdv ?? priced?.marketCap ?? 0) || 0,
+    fdv: Number(jup?.mcap ?? jup?.fdv ?? priced?.fdv ?? priced?.marketCap ?? 0) || 0,
+    holders: jup?.holderCount ?? 0,
+    traders: jup?.stats24h?.numTraders ?? 0,
+    mintDisabled: Boolean(jup?.audit?.mintAuthorityDisabled),
+    freezeDisabled: Boolean(jup?.audit?.freezeAuthorityDisabled),
     candles,
     windows: [
       { key: "m5", value: volOf("m5") || sumVolume(candles, 1) / 12 },

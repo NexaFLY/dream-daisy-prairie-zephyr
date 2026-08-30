@@ -217,7 +217,7 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
       <Header tag={t.market.tag} title={t.market.title} lead={t.market.lead} />
       <div className="mt-10 rounded-xl bg-surface p-6 shadow-[0_0_0_1px_rgba(244,236,223,0.08)] md:p-8">
         {market ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Stat label={t.market.price} value={formatPrice(market.priceUsd)} />
             <Stat
               label={t.market.change}
@@ -228,10 +228,25 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
             <Stat label={t.market.liq} value={formatUsd(market.liquidity)} />
             <Stat label={t.market.txns} value={market.txns ? market.txns.toLocaleString("en-US") : "—"} />
             <Stat label={t.market.fdv} value={market.fdv ? formatUsd(market.fdv) : "—"} />
+            <Stat
+              label={t.market.holders}
+              value={market.holders ? market.holders.toLocaleString("en-US") : "—"}
+            />
+            <Stat
+              label={t.market.traders}
+              value={market.traders ? market.traders.toLocaleString("en-US") : "—"}
+            />
           </div>
         ) : (
           <p className="text-sm text-muted">{t.market.error}</p>
         )}
+        {market && (market.mintDisabled || market.freezeDisabled) ? (
+          <p className="mt-3 font-mono text-[0.7rem] tracking-wide text-faint uppercase">
+            {market.mintDisabled ? `${t.market.mint} ${t.market.revoked}` : null}
+            {market.mintDisabled && market.freezeDisabled ? " · " : null}
+            {market.freezeDisabled ? `${t.market.freeze} ${t.market.revoked}` : null}
+          </p>
+        ) : null}
 
         <div className="mt-6 overflow-hidden rounded-lg bg-bg p-4 shadow-[0_0_0_1px_rgba(244,236,223,0.08)]">
           <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
@@ -359,7 +374,7 @@ export function NusdMarket({
       {bare ? null : <Header tag={c.tag} title={c.title} lead={c.lead} />}
       <div className={cn("rounded-xl bg-surface p-6 shadow-[0_0_0_1px_rgba(244,236,223,0.08)] md:p-8", !bare && "mt-10")}>
         {market ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Stat label={t.market.price} value={formatPrice(market.priceUsd)} />
             <Stat
               label={t.market.change}
@@ -368,7 +383,14 @@ export function NusdMarket({
             />
             <Stat label={t.market.vol} value={formatUsd(market.volume)} />
             <Stat label={t.market.liq} value={formatUsd(market.liquidity)} />
-            <Stat label={t.market.txns} value={market.txns ? market.txns.toLocaleString("en-US") : "—"} />
+            <Stat
+              label={t.market.holders}
+              value={market.holders ? market.holders.toLocaleString("en-US") : "—"}
+            />
+            <Stat
+              label={t.market.traders}
+              value={market.traders ? market.traders.toLocaleString("en-US") : "—"}
+            />
           </div>
         ) : (
           <p className="text-sm text-muted">{t.market.error}</p>
