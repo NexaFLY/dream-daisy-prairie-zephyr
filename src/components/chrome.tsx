@@ -2,7 +2,6 @@ import * as Dialog from "@radix-ui/react-dialog";
 import {
   ArrowUpRight,
   Copy,
-  Download,
   Mail,
   Menu,
   X,
@@ -66,13 +65,6 @@ export function SiteHeader({ onDonate }: { onDonate: () => void }) {
               {t.nav[item.key]}
             </a>
           ))}
-          <a
-            href="/nexa-static.zip"
-            download="nexa-static.zip"
-            className="text-[0.82rem] font-semibold text-primary transition-colors duration-150 hover:text-fg"
-          >
-            {t.nav.download}
-          </a>
         </nav>
 
         <div className="flex shrink-0 items-center gap-2">
@@ -117,15 +109,6 @@ export function SiteHeader({ onDonate }: { onDonate: () => void }) {
                 {t.nav[item.key]}
               </a>
             ))}
-            <a
-              href="/nexa-static.zip"
-              download="nexa-static.zip"
-              onClick={() => setOpen(false)}
-              className="flex h-11 items-center gap-2 text-sm font-semibold text-primary"
-            >
-              <Download className="size-4" />
-              {t.nav.download}
-            </a>
           </nav>
           <div className="mt-4 grid gap-2">
             <AuthSlot full />
@@ -344,15 +327,6 @@ export function SiteFooter() {
             <li>
               <a className="text-muted hover:text-primary" href="/nusd">
                 nUSD
-              </a>
-            </li>
-            <li>
-              <a
-                className="text-primary hover:text-fg"
-                href="/nexa-static.zip"
-                download="nexa-static.zip"
-              >
-                {t.footer.download}
               </a>
             </li>
             <li>

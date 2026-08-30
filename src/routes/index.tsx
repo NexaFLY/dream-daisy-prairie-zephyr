@@ -9,7 +9,6 @@ import {
   Market,
   Mission,
   Network,
-  PackBand,
   Problem,
   Projects,
   Team,
@@ -62,7 +61,6 @@ function HomeContent({
   return (
     <main>
       <Hero onDonate={onDonate} />
-      <PackBand />
       <Problem />
       <HowItWorks />
       <Mission />

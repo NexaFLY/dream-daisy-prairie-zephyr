@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowUpRight, Check, Copy, Download } from "lucide-react";
+import { ArrowUpRight, Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { AppFrame } from "@/components/app-frame";
 import { ConnectPanel } from "@/components/wallet-connect";
@@ -50,18 +50,10 @@ function NusdPage() {
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">{c.lead}</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
-                  href="/nusd-page.html"
-                  download="nusd.html"
-                  className={cn(buttonVariants({ variant: "primary", size: "lg" }))}
-                >
-                  <Download className="size-4" />
-                  {c.downloadHtml}
-                </a>
-                <a
                   href={SITE.jupiterNusd}
                   target="_blank"
                   rel="noreferrer"
-                  className={cn(buttonVariants({ variant: "ghost" }))}
+                  className={cn(buttonVariants({ variant: "primary" }))}
                 >
                   {c.swap} <ArrowUpRight className="size-4" />
                 </a>
@@ -82,7 +74,6 @@ function NusdPage() {
                   {c.explorer} <ArrowUpRight className="size-4" />
                 </a>
               </div>
-              <p className="mt-3 text-sm text-muted">{c.downloadHint}</p>
             </div>
           </div>
         </section>
