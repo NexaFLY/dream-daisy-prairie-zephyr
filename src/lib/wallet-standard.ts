@@ -198,10 +198,6 @@ function readInjected(): WalletAdapter[] {
   return out;
 }
 
-function readStandard(): StandardWallet[] {
-  return walletsCache.slice();
-}
-
 const walletsCache: StandardWallet[] = [];
 const listeners = new Set<() => void>();
 let hooked = false;
@@ -248,7 +244,7 @@ export function subscribeWallets(onChange: () => void) {
 export function listWallets(): WalletAdapter[] {
   hookStandard();
   const byId = new Map<string, WalletAdapter>();
-  for (const wallet of readStandard()) {
+  for (const wallet of walletsCache) {
     const adapter = fromStandard(wallet);
     byId.set(adapter.id, adapter);
   }
@@ -265,4 +261,45 @@ export function catalogWithDetected(detected: WalletAdapter[]) {
     (c) => !readyIds.has(c.id) && !readyNames.has(c.name.toLowerCase()),
   );
   return { detected, rest };
+}
+
+export function isMobileUa() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+export function walletBrowseUrl(id: string, pageUrl: string) {
+  const encoded = encodeURIComponent(pageUrl);
+  let ref = "";
+  try {
+    ref = encodeURIComponent(new URL(pageUrl).origin);
+  } catch {
+    ref = encoded;
+  }
+  switch (id) {
+    case "phantom":
+      return `https://phantom.app/ul/browse/${encoded}?ref=${ref}`;
+    case "solflare":
+      return `https://solflare.com/ul/v1/browse/${encoded}?ref=${ref}`;
+    case "backpack":
+      return `https://backpack.app/ul/v1/browse/${encoded}`;
+    case "trust":
+      return `https://link.trustwallet.com/open_url?coin_id=501&url=${encoded}`;
+    case "glow":
+      return `https://glow.app/ul/browse?url=${encoded}`;
+    default:
+      return null;
+  }
+}
+
+export function openWalletInstallOrApp(id: string, installUrl: string) {
+  if (typeof window === "undefined") return;
+  if (isMobileUa()) {
+    const deep = walletBrowseUrl(id, window.location.href);
+    if (deep) {
+      window.location.assign(deep);
+      return;
+    }
+  }
+  window.open(installUrl, "_blank", "noreferrer");
 }

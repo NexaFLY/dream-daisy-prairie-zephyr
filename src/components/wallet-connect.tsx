@@ -1,12 +1,12 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ArrowUpRight, Check, Copy, LogOut, Wallet } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n";
 import { useWallet } from "@/lib/wallet";
-import { WALLET_CATALOG } from "@/lib/wallet-standard";
+import { WALLET_CATALOG, isMobileUa, openWalletInstallOrApp } from "@/lib/wallet-standard";
 import { cn, copyText, formatAmt, shortAddr } from "@/lib/utils";
 
 function WalletMark({
@@ -269,6 +269,10 @@ export function ConnectPanel({ className }: { className?: string }) {
 export function WalletChoices({ className }: { className?: string }) {
   const { t } = useI18n();
   const { available, catalog, connecting, connect, error, closePicker } = useWallet();
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    setMobile(isMobileUa());
+  }, []);
 
   return (
     <div className={className}>
@@ -296,38 +300,46 @@ export function WalletChoices({ className }: { className?: string }) {
         {available.length ? t.wallet.more : t.wallet.any}
       </p>
       <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        {catalog.map((w) => (
-          <button
-            key={w.id}
-            type="button"
-            disabled={connecting}
-            onClick={() => {
-              const injected = available.some((a) => a.id === w.id);
-              if (injected) void connect(w.id);
-              else window.open(w.installUrl, "_blank", "noreferrer");
-            }}
-            className="flex h-12 items-center gap-3 rounded-md bg-bg px-3 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.35)]"
-          >
-            <WalletMark name={w.name} mark={w.mark} />
-            <span>
-              <span className="block text-sm font-semibold">{w.name}</span>
-              <span className="text-xs text-faint">{t.wallet.install}</span>
-            </span>
-          </button>
-        ))}
+        {catalog.map((w) => {
+          const injected = available.some((a) => a.id === w.id);
+          return (
+            <button
+              key={w.id}
+              type="button"
+              disabled={connecting}
+              onClick={() => {
+                if (injected) void connect(w.id);
+                else openWalletInstallOrApp(w.id, w.installUrl);
+              }}
+              className="flex h-12 items-center gap-3 rounded-md bg-bg px-3 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.35)]"
+            >
+              <WalletMark name={w.name} mark={w.mark} />
+              <span>
+                <span className="block text-sm font-semibold">{w.name}</span>
+                <span className="text-xs text-faint">
+                  {injected ? t.wallet.detected : mobile ? t.wallet.open : t.wallet.install}
+                </span>
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      <a
-        href="/#swap"
-        onClick={() => closePicker()}
-        className="mt-4 flex items-center justify-between rounded-md bg-bg px-4 py-4 shadow-[0_0_0_1px_rgba(255,128,0,0.28)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.55)]"
-      >
-        <span>
-          <span className="block text-sm font-semibold">{t.wallet.mobile}</span>
-          <span className="text-xs text-faint">{t.wallet.mobileBody}</span>
-        </span>
-        <ArrowUpRight className="size-4 text-primary" />
-      </a>
+      {mobile ? (
+        <p className="mt-4 text-xs leading-relaxed text-muted">{t.wallet.mobileBody}</p>
+      ) : (
+        <a
+          href="/#swap"
+          onClick={() => closePicker()}
+          className="mt-4 flex items-center justify-between rounded-md bg-bg px-4 py-4 shadow-[0_0_0_1px_rgba(255,128,0,0.28)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.55)]"
+        >
+          <span>
+            <span className="block text-sm font-semibold">{t.wallet.mobile}</span>
+            <span className="text-xs text-faint">{t.wallet.mobileBody}</span>
+          </span>
+          <ArrowUpRight className="size-4 text-primary" />
+        </a>
+      )}
 
       {error === "none" ? (
         <p className="mt-3 text-xs text-muted">{t.wallet.none}</p>

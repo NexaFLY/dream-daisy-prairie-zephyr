@@ -22,7 +22,7 @@ export function OrgMark({
     return (
       <span
         className={cn(
-          "flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-fg shadow-[0_0_0_1px_rgba(244,236,223,0.12)]",
+          "flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-bg shadow-[0_0_0_1px_rgba(244,236,223,0.12)]",
           box,
         )}
       >
@@ -47,19 +47,13 @@ export function OrgCard({ org }: { org: Association }) {
   const { t } = useI18n();
   const cat = t.org.categories[org.category];
   const src = markSrc(org);
-  const onDark = org.featured;
 
   return (
     <a
       href={`/associations/${org.slug}`}
       className="group flex flex-col overflow-hidden rounded-xl bg-surface shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.4)]"
     >
-      <div
-        className={cn(
-          "relative flex h-40 items-center justify-center overflow-hidden",
-          onDark ? "bg-bg" : "bg-fg",
-        )}
-      >
+      <div className="relative flex h-40 items-center justify-center overflow-hidden bg-bg">
         {src ? (
           <img
             src={src}

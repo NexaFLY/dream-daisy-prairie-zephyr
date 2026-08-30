@@ -12,6 +12,7 @@ import { getHoldings, type Holdings } from "@/lib/holdings";
 import {
   catalogWithDetected,
   listWallets,
+  openWalletInstallOrApp,
   subscribeWallets,
   type WalletAdapter,
   WALLET_CATALOG,
@@ -126,7 +127,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const chosen = list.find((w) => w.id === id);
       if (!chosen) {
         const fallback = WALLET_CATALOG.find((w) => w.id === id);
-        if (fallback) window.open(fallback.installUrl, "_blank", "noreferrer");
+        if (fallback) openWalletInstallOrApp(fallback.id, fallback.installUrl);
         else setError("none");
         return;
       }
