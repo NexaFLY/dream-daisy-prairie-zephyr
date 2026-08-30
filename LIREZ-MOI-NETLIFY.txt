@@ -1,0 +1,64 @@
+Nexa FLY — déploiement Netlify
+================================
+
+Ce dossier est le site complet : pages, logos, photos d’associations,
+whitepaper PDF, vidéos, swap Jupiter / Titan, wallet, répertoire.
+
+Ce n’est pas un seul fichier HTML. C’est l’application Nexa FLY.
+Netlify la construit tout seul à partir de ce dossier.
+
+
+1. Mettre le dossier sur GitHub
+-------------------------------
+- Crée un dépôt (ex. nexa-fly).
+- Glisse tout le contenu de ce dossier (pas le zip, le dossier décompressé).
+- Inclus bien le dossier public/ (logos, whitepaper, vidéos).
+
+
+2. Relier à Netlify
+-------------------
+- New site → Import an existing project → GitHub → ce dépôt.
+- Build command : npm run build
+- Publish directory : dist
+- Node : 22  (déjà dans netlify.toml)
+
+
+3. Variables d’environnement (Site configuration)
+-------------------------------------------------
+Obligatoires pour les comptes et les dons enregistrés :
+
+  BETTER_AUTH_URL      = https://nexafly.org
+  BETTER_AUTH_SECRET   = une longue phrase secrète au hasard
+  VITE_AUTH_ENABLED    = true
+
+Fortement recommandé (base Postgres gratuite chez Neon) :
+
+  DATABASE_URL         = postgresql://...
+
+Sans DATABASE_URL le site s’affiche (accueil, whitepaper, associations,
+swap, wallet) mais les dons inscrits et les espaces association
+ne restent pas d’une visite à l’autre.
+
+
+4. Domaine
+----------
+Dans Netlify → Domain settings, pointe nexafly.org vers ce site.
+BETTER_AUTH_URL doit être exactement l’adresse publique (https, sans / à la fin).
+
+
+5. Ce que tu n’as PAS besoin de faire
+-------------------------------------
+- Ne donne tes identifiants Netlify à personne.
+- Ne remplace pas ce dossier par l’ancienne version HTML.
+- Le glisser-déposer d’un zip « tout HTML » ne suffit pas : Netlify
+  doit lancer la construction (étape 2).
+
+
+Fichiers importants déjà inclus
+-------------------------------
+public/logo.png, public/hero.jpg, public/hero.mp4
+public/nexa_whitepaper.pdf
+public/orgs/          (logos Croix-Rouge, UNICEF, MSF, WWF, …)
+public/nusd.png, public/og.jpg
+src/                  (tout le site)
+migrations/           (répertoire des associations)

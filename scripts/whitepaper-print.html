@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nexa FLY — Whitepaper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Unbounded:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0906;
+    --bg-soft: #14100b;
+    --surface: #1c1610;
+    --fg: #f4ecdf;
+    --muted: #c7bcac;
+    --faint: #8d8172;
+    --primary: #ff8000;
+    --amber: #ffb454;
+    --border: #2c241c;
+    --line: rgba(244, 236, 223, 0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  @page { size: A4; margin: 0; }
+  .page {
+    width: 210mm;
+    height: 297mm;
+    page-break-after: always;
+    break-after: page;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+    padding: 16mm 16mm 18mm;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  .footer {
+    position: absolute;
+    left: 16mm; right: 16mm; bottom: 10mm;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 7.5pt; letter-spacing: 0.08em; color: var(--faint);
+    text-transform: uppercase;
+    border-top: 1px solid var(--line);
+    padding-top: 4mm;
+  }
+  .footer b { color: var(--primary); font-weight: 500; }
+  .kicker {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 8pt; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--primary);
+  }
+  h1, h2, h3 { font-family: "Unbounded", sans-serif; font-weight: 600; letter-spacing: -0.03em; }
+  h1 { font-size: 28pt; line-height: 1.08; }
+  h2 { font-size: 16pt; line-height: 1.15; }
+  h3 { font-size: 11pt; line-height: 1.25; }
+  p, li { font-size: 9.4pt; line-height: 1.48; color: var(--muted); }
+  strong { color: var(--fg); font-weight: 600; }
+  .rule { height: 1px; background: var(--line); margin: 5mm 0; }
+  .rule-orange { height: 2px; width: 22mm; background: var(--primary); margin: 4mm 0 6mm; }
+  .num { font-family: "IBM Plex Mono", monospace; font-size: 8pt; color: var(--faint); letter-spacing: 0.14em; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4.5mm; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4mm; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 5mm 5.5mm;
+  }
+  .card h3 { margin: 1.5mm 0 2mm; color: var(--fg); }
+  .stat .label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 7pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint);
+  }
+  .stat .value {
+    font-family: "Unbounded", sans-serif;
+    font-size: 12pt; color: var(--fg); margin-top: 1.5mm;
+  }
+  .stat .sub { font-size: 7.5pt; color: var(--faint); margin-top: 1mm; word-break: break-all; }
+  .mono { font-family: "IBM Plex Mono", monospace; font-size: 7.6pt; color: var(--amber); word-break: break-all; }
+  .cover { padding: 0; color: var(--fg); }
+  .cover-bg {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(11,9,6,0.35) 0%, rgba(11,9,6,0.72) 48%, #0b0906 100%),
+      url("file:///workspace/public/hero.jpg") center/cover no-repeat;
+  }
+  .cover-inner {
+    position: relative; z-index: 1;
+    height: 100%;
+    padding: 16mm 16mm 18mm;
+    display: flex; flex-direction: column;
+  }
+  .cover-top {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 7.5pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+  }
+  .cover-top span { color: var(--primary); }
+  .cover-mid { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-bottom: 8mm; }
+  .cover-logo {
+    width: 28mm; height: 28mm; object-fit: cover; border-radius: 6px;
+    box-shadow: 0 0 0 1px rgba(244,236,223,0.12);
+    margin-bottom: 8mm;
+  }
+  .cover h1 { font-size: 42pt; line-height: 0.95; }
+  .cover h1 em { font-style: normal; color: var(--primary); }
+  .cover .wp { font-family: "Unbounded", sans-serif; font-size: 18pt; font-weight: 500; color: var(--fg); margin-top: 4mm; }
+  .cover .tag { font-size: 13pt; color: var(--muted); margin-top: 6mm; max-width: 140mm; line-height: 1.35; }
+  .cover-bottom {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4mm;
+    border-top: 1px solid var(--line); padding-top: 6mm;
+  }
+  .cover-bottom .label { font-family: "IBM Plex Mono", monospace; font-size: 7pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); }
+  .cover-bottom .value { font-size: 9pt; color: var(--fg); margin-top: 1.5mm; }
+  .toc-item { display: flex; align-items: baseline; gap: 3mm; padding: 2.4mm 0; border-bottom: 1px solid var(--line); }
+  .toc-item .n { font-family: "IBM Plex Mono", monospace; color: var(--primary); font-size: 8pt; width: 10mm; }
+  .toc-item .t { flex: 1; color: var(--fg); font-size: 10pt; font-weight: 600; }
+  .toc-item .p { font-family: "IBM Plex Mono", monospace; color: var(--faint); font-size: 8pt; }
+  .step { display: flex; gap: 4mm; margin-bottom: 4mm; }
+  .step .idx {
+    flex: 0 0 9mm; height: 9mm; border-radius: 4px;
+    background: var(--surface); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-family: "IBM Plex Mono", monospace; color: var(--primary); font-size: 9pt;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  th {
+    text-align: left; font-family: "IBM Plex Mono", monospace;
+    font-size: 7pt; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--faint); font-weight: 500;
+    padding: 2.4mm 3mm; border-bottom: 1px solid var(--line);
+  }
+  td {
+    padding: 2.6mm 3mm; border-bottom: 1px solid var(--line);
+    color: var(--muted); vertical-align: top;
+  }
+  td:first-child { color: var(--fg); font-weight: 600; width: 42mm; }
+  .road { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .road article { padding: 5mm; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  .road .when { font-family: "IBM Plex Mono", monospace; font-size: 8pt; color: var(--primary); }
+  .road h3 { margin: 1.5mm 0 2mm; }
+  ul.clean { list-style: none; }
+  ul.clean li { padding-left: 4.5mm; position: relative; margin-bottom: 2.2mm; }
+  ul.clean li::before {
+    content: ""; position: absolute; left: 0; top: 2.1mm;
+    width: 2mm; height: 2mm; background: var(--primary); border-radius: 1px;
+  }
+  .disc { font-size: 7.8pt; line-height: 1.45; color: var(--faint); }
+</style>
+</head>
+<body>
+<!-- 1 COVER -->
+<section class="page cover">
+  <div class="cover-bg"></div>
+  <div class="cover-inner">
+    <div class="cover-top">
+      <div>French Law 1901 association · France</div>
+      <div><span>Solana</span> · SPL · August 2026</div>
+    </div>
+    <div class="cover-mid">
+      <img class="cover-logo" src="file:///workspace/public/logo.png" alt="Nexa FLY">
+      <p class="kicker">Founding document · Version 2.0</p>
+      <div class="rule-orange"></div>
+      <h1>NEXA <em>FLY</em></h1>
+      <p class="wp">Whitepaper</p>
+      <p class="tag">Every donation, visible. Forever. A French non-profit for transparent crypto giving on Solana — no opaque middleman.</p>
+    </div>
+    <div class="cover-bottom">
+      <div>
+        <div class="label">RNA</div>
+        <div class="value">W131019858</div>
+      </div>
+      <div>
+        <div class="label">SIREN</div>
+        <div class="value">101 736 536</div>
+      </div>
+      <div>
+        <div class="label">Registered office</div>
+        <div class="value">175 Cours Gimon<br>13300 Salon-de-Provence</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 TOC + INTRO -->
+<section class="page">
+  <p class="kicker">Contents</p>
+  <h2 style="margin: 3mm 0 6mm;">What this document sets out.</h2>
+  <div class="grid-2" style="align-items:start;">
+    <div>
+      <div class="toc-item"><span class="n">01</span><span class="t">Introduction</span><span class="p">02</span></div>
+      <div class="toc-item"><span class="n">02</span><span class="t">Project overview</span><span class="p">03</span></div>
+      <div class="toc-item"><span class="n">03</span><span class="t">FLY token utility</span><span class="p">04</span></div>
+      <div class="toc-item"><span class="n">04</span><span class="t">nUSD, the internal dollar</span><span class="p">04</span></div>
+      <div class="toc-item"><span class="n">05</span><span class="t">Tokenomics</span><span class="p">05</span></div>
+      <div class="toc-item"><span class="n">06</span><span class="t">Technology</span><span class="p">05</span></div>
+    </div>
+    <div>
+      <div class="toc-item"><span class="n">07</span><span class="t">Ecosystem & associations</span><span class="p">06</span></div>
+      <div class="toc-item"><span class="n">08</span><span class="t">Roadmap</span><span class="p">07</span></div>
+      <div class="toc-item"><span class="n">09</span><span class="t">Community & governance</span><span class="p">07</span></div>
+      <div class="toc-item"><span class="n">10</span><span class="t">Legal identity & transparency</span><span class="p">08</span></div>
+      <div class="toc-item"><span class="n">11</span><span class="t">Contact</span><span class="p">08</span></div>
+    </div>
+  </div>
+
+  <div class="rule" style="margin-top: 9mm;"></div>
+  <p class="num">01</p>
+  <h2 style="margin: 2mm 0 4mm;">Introduction</h2>
+  <p>Nexa is a <strong>French non-profit organization</strong> (Law 1901) designed to unite multiple charitable associations under a single ecosystem. Its mission is to make crypto donations <strong>transparent, secure, and efficient</strong> using blockchain technology.</p>
+  <p style="margin-top: 3.5mm;">By leveraging Solana’s high-speed, low-fee network, Nexa aims to modernize philanthropy and expand crypto adoption in the charitable sector. Every contribution should be <strong>traceable, verifiable, and attributed</strong> — without relying on an opaque intermediary.</p>
+  <div class="grid-3" style="margin-top: 7mm;">
+    <article class="card stat">
+      <div class="label">Mission</div>
+      <div class="value" style="font-size:10.5pt;">Visible gifts</div>
+      <p style="margin-top:2mm;font-size:8.4pt;">On-chain traceability from donor to association.</p>
+    </article>
+    <article class="card stat">
+      <div class="label">Network</div>
+      <div class="value" style="font-size:10.5pt;">Solana</div>
+      <p style="margin-top:2mm;font-size:8.4pt;">Low fees, fast finality — fit for micro-donations.</p>
+    </article>
+    <article class="card stat">
+      <div class="label">Status</div>
+      <div class="value" style="font-size:10.5pt;">Law 1901</div>
+      <p style="margin-top:2mm;font-size:8.4pt;">RNA W131019858 · public JOAFE and SIREN.</p>
+    </article>
+  </div>
+  <div class="footer"><span>Nexa FLY · Whitepaper v2.0</span><span><b>02</b> / 08</span></div>
+</section>
+
+<!-- 3 OVERVIEW -->
+<section class="page">
+  <p class="num">02</p>
+  <p class="kicker" style="margin-top:1mm;">Platform</p>
+  <h2 style="margin: 2mm 0 4mm;">Project overview</h2>
+  <p>Nexa provides a decentralized platform where associations receive cryptocurrency donations <strong>without intermediaries</strong>. The <strong>FLY</strong> token is the utility token of the ecosystem: donors can track contributions in real time and take part in governance. This approach builds trust, transparency, and community involvement in charitable giving.</p>
+  <p style="margin-top: 3.5mm;">nexafly.org is the public front of that infrastructure: an association directory, USDC → FLY swap (Jupiter, Titan), the internal dollar nUSD, and a treasury wallet anyone can inspect.</p>
+
+  <h3 style="margin: 7mm 0 4mm;">Path of a donation</h3>
+  <div class="step">
+    <div class="idx">1</div>
+    <div>
+      <h3>Enter the rail</h3>
+      <p>The donor swaps USDC (or SOL) into FLY, or operates in nUSD. The swap runs on Solana DEXs — Jupiter or Titan — not inside a private black box.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="idx">2</div>
+    <div>
+      <h3>Send to a public wallet</h3>
+      <p>Funds go to Nexa FLY’s transparency wallet, or to an association’s own wallet once it has been claimed. The address is published. The transaction is visible on Solscan.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="idx">3</div>
+    <div>
+      <h3>Tag, then redistribute</h3>
+      <p>Hosted associations first share the Nexa treasury. Each gift is tagged in the ledger (destination association). Redistribution to beneficiaries remains on-chain.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 3mm;">
+    <p class="kicker">Principle</p>
+    <p style="margin-top:2.5mm;color:var(--fg);font-size:10.5pt;line-height:1.4;">Trust is not declared. It is checked — on an explorer, against a public address, without an unreadable PDF report six months later.</p>
+  </div>
+  <div class="footer"><span>Nexa FLY · Whitepaper v2.0</span><span><b>03</b> / 08</span></div>
+</section>
+
+<!-- 4 UTILITY + NUSD -->
+<section class="page">
+  <p class="num">03</p>
+  <p class="kicker" style="margin-top:1mm;">FLY</p>
+  <h2 style="margin: 2mm 0 4mm;">Token utility</h2>
+  <p style="margin-bottom: 5mm;">FLY is not a security. It is the association’s utility token: a rail for donations, governance, liquidity, and incentives.</p>
+  <div class="grid-2">
+    <article class="card">
+      <p class="kicker">Donations</p>
+      <h3>Direct contribution</h3>
+      <p>FLY can be used for direct gifts to registered associations. The transfer is a public, timestamped Solana transaction.</p>
+    </article>
+    <article class="card">
+      <p class="kicker">Governance</p>
+      <h3>Holder votes</h3>
+      <p>Token holders vote on ecosystem proposals and partnership decisions. Votes are visible on-chain.</p>
+    </article>
+    <article class="card">
+      <p class="kicker">Liquidity</p>
+      <h3>Tradable on DEXs</h3>
+      <p>FLY trades on Solana DEXs (Raydium, Orca) and can be bought via Jupiter or Titan from USDC or SOL.</p>
+    </article>
+    <article class="card">
+      <p class="kicker">Incentives</p>
+      <h3>Participation</h3>
+      <p>Community members and partner associations may receive FLY for active participation.</p>
+    </article>
+  </div>
+
+  <div class="rule" style="margin-top: 7mm;"></div>
+  <p class="num">04</p>
+  <p class="kicker" style="margin-top:1mm;">Internal stable</p>
+  <h2 style="margin: 2mm 0 3.5mm;">nUSD, the dollar on the FLY rail</h2>
+  <p>Nexa USD (nUSD) is the internal stable token, <strong>pegged 1:1 to USDC</strong>. It is used for gifts, pools, and association treasury without exposing the donor to FLY price risk. USDC remains the external rail — the site’s public book reads the FLY / USDC pair, the deepest market.</p>
+  <div class="grid-3" style="margin-top: 5mm;">
+    <article class="card stat">
+      <div class="label">Role</div>
+      <div class="value" style="font-size:11pt;">Stable gifts</div>
+      <p style="margin-top:2mm;font-size:8.2pt;">Enter in USDC, operate in nUSD, no FLY price exposure.</p>
+    </article>
+    <article class="card stat">
+      <div class="label">Target peg</div>
+      <div class="value" style="font-size:11pt;">1 ≈ 1 USDC</div>
+      <p style="margin-top:2mm;font-size:8.2pt;">Internal unit of account, controlled by the association.</p>
+    </article>
+    <article class="card stat">
+      <div class="label">Contract</div>
+      <div class="value" style="font-size:8.2pt;word-break:break-all;line-height:1.3;">711P4h…GqcDx</div>
+      <p class="mono" style="margin-top:2mm;">SPL · Solana</p>
+    </article>
+  </div>
+  <h3 style="margin: 6mm 0 3.5mm;">Three units, three roles</h3>
+  <div class="grid-3">
+    <article class="card">
+      <p class="kicker">External</p>
+      <h3>USDC</h3>
+      <p>The market dollar. The public book reads FLY / USDC — the volume that matters.</p>
+    </article>
+    <article class="card">
+      <p class="kicker">Internal</p>
+      <h3>nUSD</h3>
+      <p>The association dollar, backed 1:1. Gifts and pools without FLY price exposure.</p>
+    </article>
+    <article class="card">
+      <p class="kicker">Utility</p>
+      <h3>FLY</h3>
+      <p>The association token. Governance, traceability, and liquidity on Solana.</p>
+    </article>
+  </div>
+  <div class="footer"><span>Nexa FLY · Whitepaper v2.0</span><span><b>04</b> / 08</span></div>
+</section>
+
+<!-- 5 TOKENOMICS + TECH -->
+<section class="page">
+  <p class="num">05</p>
+  <p class="kicker" style="margin-top:1mm;">Figures</p>
+  <h2 style="margin: 2mm 0 5mm;">Tokenomics</h2>
+  <table>
+    <thead>
+      <tr><th>Field</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Name</td><td>Nexa</td></tr>
+      <tr><td>Symbol</td><td>FLY</td></tr>
+      <tr><td>Standard</td><td>Solana SPL Token</td></tr>
+      <tr><td>Total supply</td><td>899,926.528697 FLY</td></tr>
+      <tr><td>Decimals</td><td>6</td></tr>
+      <tr><td>FLY mint</td><td class="mono" style="color:var(--amber)">9NcUwy9JVekfsY4UA62ZaTprn4TDnJZwp5B6vMAAtkzt</td></tr>
+      <tr><td>nUSD mint</td><td class="mono" style="color:var(--amber)">711P4haqL2hzDA1KrfWST5QFdigDRymQoLxDGfMGqcDx</td></tr>
+      <tr><td>Reference pair</td><td>FLY / USDC — site public book</td></tr>
+      <tr><td>Pools</td><td>Raydium (4) · Orca (1)</td></tr>
+      <tr><td>Venues</td><td>Jupiter, Titan, Raydium, Orca, Meteora</td></tr>
+    </tbody>
+  </table>
+
+  <div class="rule" style="margin-top: 8mm;"></div>
+  <p class="num">06</p>
+  <p class="kicker" style="margin-top:1mm;">Stack</p>
+  <h2 style="margin: 2mm 0 4mm;">Technology & blockchain</h2>
+  <div class="grid-2">
+    <article class="card">
+      <h3>Chain</h3>
+      <p>Solana. Negligible fees, fast confirmation — a requirement for gifts of every size, including very small ones.</p>
+    </article>
+    <article class="card">
+      <h3>Standard</h3>
+      <p>SPL Token. Compatible with Phantom, Solflare, Backpack, Ledger, and any Solana wallet (Wallet Standard).</p>
+    </article>
+    <article class="card">
+      <h3>Audits</h3>
+      <p>Internal reviews completed. External audits planned. No third-party audit is claimed until the report is published.</p>
+    </article>
+    <article class="card">
+      <h3>Analytics</h3>
+      <p>Every transaction is trackable on-chain: Solscan, DexScreener, GeckoTerminal. Nothing sits off-book.</p>
+    </article>
+  </div>
+  <div class="footer"><span>Nexa FLY · Whitepaper v2.0</span><span><b>05</b> / 08</span></div>
+</section>
+
+<!-- 6 ECOSYSTEM -->
+<section class="page">
+  <p class="num">07</p>
+  <p class="kicker" style="margin-top:1mm;">Network</p>
+  <h2 style="margin: 2mm 0 4mm;">Ecosystem & partnerships</h2>
+  <p>Nexa collaborates with verified non-profit organizations so donations reach legitimate beneficiaries. Multiple Solana DEXs carry liquidity. Phantom and Solflare make FLY accessible worldwide.</p>
+
+  <h3 style="margin: 6mm 0 3.5mm;">Hosted associations</h3>
+  <p>Major French and international associations are pre-listed in the directory (Red Cross, MSF, UNICEF, WWF, Restos du Cœur, and others). <strong>Until an association claims its own wallet, gifts intended for it transit through the Nexa FLY treasury</strong> — the public wallet below — and are tagged in the ledger. That balance is not “theirs”: it is a deposit awaiting redistribution, under Nexa’s control.</p>
+
+  <div class="card" style="margin-top: 5mm;">
+    <div class="label" style="font-family:'IBM Plex Mono',monospace;font-size:7pt;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);">Nexa FLY treasury wallet</div>
+    <p class="mono" style="font-size:9.5pt;margin-top:2.5mm;color:var(--amber);">bosnEo1BZdm3M9mHu9NdeWkuBwDuvtF7wJ3Eo7gmhwT</p>
+    <p style="margin-top:2.5mm;font-size:8.2pt;">Solscan: solscan.io/account/bosnEo1BZdm3M9mHu9NdeWkuBwDuvtF7wJ3Eo7gmhwT</p>
+  </div>
+
+  <div class="grid-2" style="margin-top: 5mm;">
+    <article class="card">
+      <h3>DEXs & swap</h3>
+      <ul class="clean" style="margin-top:2mm;">
+        <li>Jupiter — Solana route aggregator</li>
+        <li>Titan Exchange — alternate USDC → FLY route</li>
+        <li>Raydium, Orca, Meteora — native liquidity</li>
+      </ul>
+    </article>
+    <article class="card">
+      <h3>Wallets</h3>
+      <ul class="clean" style="margin-top:2mm;">
+        <li>Phantom, Solflare, Backpack</li>
+        <li>Ledger and Solana mobile wallets</li>
+        <li>Any Wallet Standard compatible app</li>
+      </ul>
+    </article>
+  </div>
+  <p style="margin-top: 5mm;">A partner association can later connect its own wallet: subsequent gifts arrive directly. Until then, Nexa holds, tags, and redistributes.</p>
+  <div class="footer"><span>Nexa FLY · Whitepaper v2.0</span><span><b>06</b> / 08</span></div>
+</section>
+
+<!-- 7 ROADMAP + GOV -->
+<section class="page">
+  <p class="num">08</p>
+  <p class="kicker" style="margin-top:1mm;">Timeline</p>
+  <h2 style="margin: 2mm 0 5mm;">Roadmap</h2>
+  <div class="road">
+    <article>
+      <p class="when">Q2 2025 — Foundations</p>
+      <h3>Concept and token</h3>
+      <p>Project design, FLY token creation, Law 1901 association frame.</p>
+    </article>
+    <article>
+      <p class="when">Q3 2025 — Liquidity</p>
+      <h3>First pools</h3>
+      <p>Launch of Raydium and Orca pools. The public book now reads FLY / USDC.</p>
+    </article>
+    <article>
+      <p class="when">Q4 2025 — Access</p>
+      <h3>Listings and wallets</h3>
+      <p>Listings (CoinGecko), Phantom and Solflare integration, DexScreener / GeckoTerminal presence.</p>
+    </article>
+    <article>
+      <p class="when">2026 — Platform</p>
+      <h3>Full product</h3>
+      <p>Full platform, association directory, NFT donation certificates, European expansion.</p>
+    </article>
+  </div>
+
+  <div class="rule" style="margin-top: 8mm;"></div>
+  <p class="num">09</p>
+  <p class="kicker" style="margin-top:1mm;">Power</p>
+  <h2 style="margin: 2mm 0 4mm;">Community & governance</h2>
+  <p>The community sits at the centre of the project. FLY holders can vote, propose new partnerships, and help shape the ecosystem’s growth. <strong>All contributions and all governance actions are public on-chain</strong> — that is the condition of trust.</p>
+  <div class="grid-3" style="margin-top: 5mm;">
+    <article class="card">
+      <h3>Vote</h3>
+      <p>Ecosystem proposals, partnerships, redistribution priorities.</p>
+    </article>
+    <article class="card">
+      <h3>Propose</h3>
+      <p>An association, a tool, a pool: the community can put it on the agenda.</p>
+    </article>
+    <article class="card">
+      <h3>Verify</h3>
+      <p>No closed minutes. The explorer is enough.</p>
+    </article>
+  </div>
+  <div class="footer"><span>Nexa FLY · Whitepaper v2.0</span><span><b>07</b> / 08</span></div>
+</section>
+
+<!-- 8 LEGAL + CONTACT -->
+<section class="page">
+  <p class="num">10</p>
+  <p class="kicker" style="margin-top:1mm;">Proof</p>
+  <h2 style="margin: 2mm 0 4mm;">Legal identity & transparency</h2>
+  <p>Nexa FLY is a registered association. Filing documents (receipt, SIREN, JOAFE notice) are published on nexafly.org, in the <em>legal</em> folder.</p>
+  <table style="margin-top: 4mm;">
+    <thead><tr><th>Item</th><th>Reference</th></tr></thead>
+    <tbody>
+      <tr><td>Name</td><td>Nexa FLY</td></tr>
+      <tr><td>Form</td><td>French Law 1901 non-profit association</td></tr>
+      <tr><td>RNA</td><td>W131019858</td></tr>
+      <tr><td>SIREN</td><td>101 736 536</td></tr>
+      <tr><td>Registered office</td><td>175 Cours Gimon, 13300 Salon-de-Provence, France</td></tr>
+      <tr><td>Public wallet</td><td class="mono">bosnEo1BZdm3M9mHu9NdeWkuBwDuvtF7wJ3Eo7gmhwT</td></tr>
+      <tr><td>Email</td><td>contact@nexafly.org</td></tr>
+    </tbody>
+  </table>
+
+  <div class="rule" style="margin-top: 7mm;"></div>
+  <p class="num">11</p>
+  <p class="kicker" style="margin-top:1mm;">Address</p>
+  <h2 style="margin: 2mm 0 4mm;">Contact</h2>
+  <div class="grid-2">
+    <article class="card">
+      <h3>Web & mail</h3>
+      <p style="margin-top:2mm;">nexafly.org<br>contact@nexafly.org</p>
+    </article>
+    <article class="card">
+      <h3>Social</h3>
+      <p style="margin-top:2mm;">X · x.com/NexaFly<br>Telegram · t.me/NexaFlyToken<br>LinkedIn, Instagram, Facebook · Nexa FLY</p>
+    </article>
+  </div>
+
+  <p class="disc" style="margin-top: 7mm;">
+    <strong style="color:var(--muted);">Notice.</strong>
+    This document describes the Nexa FLY association, the FLY utility token, and the internal stable nUSD. It is not a public offering of securities, investment advice, or a return guarantee. FLY trades on decentralized markets: the price can move, including down. Crypto donations are irreversible. Pre-listed associations have not all claimed their own wallet; until they do, funds transit through the Nexa FLY treasury and are tagged in the ledger. Version 2.0 — August 2026. Replaces the previous white-background edition.
+  </p>
+  <div class="footer"><span>Nexa FLY · Whitepaper v2.0 · nexafly.org</span><span><b>08</b> / 08</span></div>
+</section>
+</body>
+</html>
