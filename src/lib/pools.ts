@@ -45,7 +45,7 @@ function addUrl(type: string, id: string) {
 }
 
 export function createPoolUrl(mintA: string, mintB: string) {
-  return `https://raydium.io/liquidity/create-pool/?coin0=${mintA}&coin1=${mintB}`;
+  return `https://raydium.io/clmm/create-pool/?mint1=${mintA}&mint2=${mintB}`;
 }
 
 function mapPool(p: RayPool): PoolRow | null {

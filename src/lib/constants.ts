@@ -8,6 +8,7 @@ export const SITE = {
   usdcPair: "pyWjZqkApxm9kXDwroHDrXdHKH2fRCbrp5CUHQts8hh",
   nusdUsdcPair: "HDqnZQk6HskaLpgwutAaBfYeZDCLJXEMRf3GB1kEbvhk",
   wallet: "bosnEo1BZdm3M9mHu9NdeWkuBwDuvtF7wJ3Eo7gmhwT",
+  poolListingSol: 0.05,
   rna: "W131019858",
   siren: "101736536",
   address: "175 Cours Gimon, 13300 Salon-de-Provence, France",

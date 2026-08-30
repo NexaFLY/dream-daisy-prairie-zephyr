@@ -3,6 +3,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n";
+import { payPoolListing } from "@/lib/pool-fee";
 import {
   QUOTE_PRESETS,
   createPoolUrl,
@@ -10,6 +11,7 @@ import {
   type PoolRow,
 } from "@/lib/pools";
 import { cn, formatUsd } from "@/lib/utils";
+import { useWallet } from "@/lib/wallet";
 
 const BASES = [
   { symbol: "FLY", mint: SITE.mint },
@@ -19,10 +21,13 @@ const BASES = [
 export function PoolLab({ pools }: { pools: PoolRow[] }) {
   const { t } = useI18n();
   const c = t.pools;
+  const { address, openPicker } = useWallet();
   const [baseMint, setBaseMint] = useState(SITE.mint);
   const [quote, setQuote] = useState(SITE.usdcMint);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
   const [found, setFound] = useState<PoolRow[] | null>(null);
   const [quoteToken, setQuoteToken] = useState<{ symbol: string; mint: string } | null>(
     { symbol: "USDC", mint: SITE.usdcMint },
@@ -51,6 +56,24 @@ export function PoolLab({ pools }: { pools: PoolRow[] }) {
       setFound([]);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function onCreate() {
+    if (!quoteToken) return;
+    if (!address) {
+      openPicker();
+      return;
+    }
+    setPaying(true);
+    setPayError(null);
+    try {
+      await payPoolListing();
+      window.open(createUrl, "_blank", "noopener,noreferrer");
+    } catch {
+      setPayError(c.payError);
+    } finally {
+      setPaying(false);
     }
   }
 
@@ -141,32 +164,24 @@ export function PoolLab({ pools }: { pools: PoolRow[] }) {
                     href={best.addUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className={cn(buttonVariants({ variant: "primary" }))}
+                    className={cn(buttonVariants({ variant: "ghost" }))}
                   >
                     {c.add} <ArrowUpRight className="size-4" />
                   </a>
-                  <a
-                    href={createUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={cn(buttonVariants({ variant: "ghost" }))}
-                  >
-                    {c.create} <ArrowUpRight className="size-4" />
-                  </a>
+                  <Button onClick={() => void onCreate()} disabled={paying}>
+                    {paying ? c.paying : c.payCreate}
+                    {!paying ? <ArrowUpRight className="size-4" /> : null}
+                  </Button>
                 </div>
               </>
             ) : (
               <>
                 <p className="mt-1 text-sm text-muted">{found ? c.none : c.hint}</p>
                 <div className="mt-5 flex flex-wrap gap-3">
-                  <a
-                    href={createUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={cn(buttonVariants({ variant: "primary" }))}
-                  >
-                    {c.create} <ArrowUpRight className="size-4" />
-                  </a>
+                  <Button onClick={() => void onCreate()} disabled={paying}>
+                    {paying ? c.paying : c.payCreate}
+                    {!paying ? <ArrowUpRight className="size-4" /> : null}
+                  </Button>
                   <a
                     href={SITE.raydiumPortfolio}
                     target="_blank"
@@ -178,6 +193,7 @@ export function PoolLab({ pools }: { pools: PoolRow[] }) {
                 </div>
               </>
             )}
+            {payError ? <p className="mt-3 text-xs text-primary">{payError}</p> : null}
             <p className="mt-4 text-xs leading-relaxed text-faint">{c.note}</p>
           </div>
         </div>
