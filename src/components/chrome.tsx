@@ -272,6 +272,7 @@ export function SiteFooter() {
     { href: SITE.linkedin, label: "LinkedIn" },
     { href: SITE.instagram, label: "Instagram" },
     { href: SITE.facebook, label: "Facebook" },
+    { href: SITE.github, label: "GitHub" },
   ];
 
   return (
@@ -328,6 +329,11 @@ export function SiteFooter() {
             <li>
               <a className="text-muted hover:text-primary" href="/nusd">
                 nUSD
+              </a>
+            </li>
+            <li>
+              <a className="text-muted hover:text-primary" href={SITE.github} target="_blank" rel="noreferrer">
+                GitHub
               </a>
             </li>
             <li>

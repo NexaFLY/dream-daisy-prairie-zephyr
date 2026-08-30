@@ -110,7 +110,18 @@ async function resolveMint(query: string): Promise<PoolToken | null> {
 }
 
 export const listFlyPools = createServerFn({ method: "GET" }).handler(async () => {
-  return raydiumByMint(SITE.mint);
+  const [fly, nusd] = await Promise.all([
+    raydiumByMint(SITE.mint),
+    raydiumByMint(SITE.nusdMint),
+  ]);
+  const seen = new Set<string>();
+  const out: PoolRow[] = [];
+  for (const pool of [...fly, ...nusd]) {
+    if (seen.has(pool.id)) continue;
+    seen.add(pool.id);
+    out.push(pool);
+  }
+  return out.sort((a, b) => b.tvl - a.tvl);
 });
 
 export const lookupPair = createServerFn({ method: "GET" })

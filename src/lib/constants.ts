@@ -19,6 +19,7 @@ export const SITE = {
   linkedin: "https://www.linkedin.com/company/nexafly",
   instagram: "https://www.instagram.com/nexa_f_l_y",
   facebook: "https://www.facebook.com/solana.nexa.fly",
+  github: "https://github.com/NexaFLY/dream-daisy-prairie-zephyr",
   jupiter:
     "https://jup.ag/swap?sell=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&buy=9NcUwy9JVekfsY4UA62ZaTprn4TDnJZwp5B6vMAAtkzt",
   jupiterNusd:
