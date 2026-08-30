@@ -4,6 +4,7 @@ import {
   Check,
   ChevronDown,
   Copy,
+  Download,
   Eye,
   Landmark,
   PenLine,
@@ -87,6 +88,14 @@ export function Hero({ onDonate }: { onDonate: () => void }) {
             <a href="/associations" className={cn(buttonVariants({ variant: "subtle", size: "lg" }))}>
               {t.hero.space}
             </a>
+            <a
+              href="/nexa-static.zip"
+              download="nexa-static.zip"
+              className={cn(buttonVariants({ variant: "primary", size: "lg" }))}
+            >
+              <Download className="size-4" />
+              {t.hero.download}
+            </a>
           </div>
           <div className="stagger-in mt-8 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[0.7rem] tracking-wide text-faint uppercase">
             <span>{t.hero.proofRna}</span>
@@ -106,6 +115,30 @@ export function Hero({ onDonate }: { onDonate: () => void }) {
             <SnapRow label={t.snapshot.status} value={t.snapshot.statusValue} />
           </dl>
         </div>
+      </div>
+    </section>
+  );
+}
+
+export function PackBand() {
+  const { t } = useI18n();
+  const c = t.pack;
+  return (
+    <section className="relative z-10 mx-auto max-w-6xl px-5 py-6">
+      <div className="flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-[0_0_0_1px_rgba(255,128,0,0.35)] sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-mono text-[0.72rem] tracking-[0.2em] text-primary uppercase">{c.tag}</p>
+          <h2 className="mt-2 font-display text-xl font-semibold">{c.title}</h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">{c.lead}</p>
+        </div>
+        <a
+          href="/nexa-static.zip"
+          download="nexa-static.zip"
+          className={cn(buttonVariants({ variant: "primary", size: "lg" }), "shrink-0")}
+        >
+          <Download className="size-4" />
+          {c.button}
+        </a>
       </div>
     </section>
   );

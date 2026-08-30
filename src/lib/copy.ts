@@ -20,6 +20,7 @@ export const copy = {
       space: "Espace",
       signIn: "Connexion",
       signOut: "Déconnexion",
+      download: "Télécharger",
     },
     hero: {
       eyebrow: "Association loi 1901 · Solana",
@@ -30,6 +31,7 @@ export const copy = {
       cta: "Faire un don",
       secondary: "Lire le whitepaper",
       space: "Espace association",
+      download: "Télécharger le dossier",
       proofRna: "RNA W131019858",
       proofWallet: "Wallet public",
       proofChain: "On-chain Solana",
@@ -545,6 +547,13 @@ export const copy = {
       docs: "Documents",
       social: "Réseaux",
       copyright: "© Nexa FLY Association",
+      download: "Télécharger le site",
+    },
+    pack: {
+      tag: "Publier",
+      title: "Télécharger le dossier du site.",
+      lead: "Un zip prêt pour Cloudflare : index.html, pages, logos, whitepaper. Pas de TypeScript.",
+      button: "Télécharger nexa-static.zip",
     },
   },
   en: {
@@ -566,6 +575,7 @@ export const copy = {
       space: "Space",
       signIn: "Sign in",
       signOut: "Sign out",
+      download: "Download",
     },
     hero: {
       eyebrow: "French Law 1901 nonprofit · Solana",
@@ -576,6 +586,7 @@ export const copy = {
       cta: "Donate",
       secondary: "Read the whitepaper",
       space: "Association space",
+      download: "Download the folder",
       proofRna: "RNA W131019858",
       proofWallet: "Public wallet",
       proofChain: "On-chain Solana",
@@ -1091,6 +1102,13 @@ export const copy = {
       docs: "Documents",
       social: "Social",
       copyright: "© Nexa FLY Association",
+      download: "Download the site",
+    },
+    pack: {
+      tag: "Publish",
+      title: "Download the site folder.",
+      lead: "A zip ready for Cloudflare: index.html, pages, logos, whitepaper. No TypeScript.",
+      button: "Download nexa-static.zip",
     },
   },
 } as const;
