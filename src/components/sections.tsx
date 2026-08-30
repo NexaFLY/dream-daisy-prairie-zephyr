@@ -217,7 +217,7 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
       <Header tag={t.market.tag} title={t.market.title} lead={t.market.lead} />
       <div className="mt-10 rounded-xl bg-surface p-6 shadow-[0_0_0_1px_rgba(244,236,223,0.08)] md:p-8">
         {market ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <Stat label={t.market.price} value={formatPrice(market.priceUsd)} />
             <Stat
               label={t.market.change}
@@ -227,6 +227,7 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
             <Stat label={t.market.vol} value={formatUsd(market.volume)} />
             <Stat label={t.market.liq} value={formatUsd(market.liquidity)} />
             <Stat label={t.market.txns} value={market.txns ? market.txns.toLocaleString("en-US") : "—"} />
+            <Stat label={t.market.fdv} value={market.fdv ? formatUsd(market.fdv) : "—"} />
           </div>
         ) : (
           <p className="text-sm text-muted">{t.market.error}</p>
@@ -253,6 +254,14 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
 
         <div className="mt-6 flex flex-wrap gap-3">
           <a
+            href={market?.solscanUrl ?? SITE.solscanToken}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(buttonVariants({ variant: "ghost" }))}
+          >
+            {t.market.openSolscan} <ArrowUpRight className="size-4" />
+          </a>
+          <a
             href={market?.pairUrl ?? SITE.dexscreener}
             target="_blank"
             rel="noreferrer"
@@ -267,6 +276,35 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
             {t.market.swap}
           </a>
         </div>
+        {market?.pools?.length ? (
+          <div className="mt-6">
+            <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
+              {t.market.pools}
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {market.pools.map((pool) => (
+                <a
+                  key={`${pool.dex}-${pool.quote}-${pool.url}`}
+                  href={pool.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between rounded-md bg-bg px-3 py-2 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.35)]"
+                >
+                  <span>
+                    <span className="block text-sm font-semibold">FLY / {pool.quote}</span>
+                    <span className="font-mono text-[0.65rem] tracking-widest text-faint uppercase">
+                      {pool.dex}
+                    </span>
+                  </span>
+                  <span className="text-right">
+                    <span className="block font-mono text-xs tabular-nums">{formatUsd(pool.volume)}</span>
+                    <span className="font-mono text-[0.65rem] text-faint">{formatUsd(pool.liquidity)}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : null}
         {market ? (
           <p className="mt-4 font-mono text-xs text-faint uppercase">
             {t.market.pair} · {market.pair} · {market.dex}

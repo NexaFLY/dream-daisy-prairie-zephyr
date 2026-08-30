@@ -235,12 +235,12 @@ export function ConnectPanel({ className }: { className?: string }) {
                   type="button"
                   disabled={connecting}
                   onClick={() => void connect(w.id)}
-                  className="flex h-14 items-center gap-3 rounded-md bg-bg px-4 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.1)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.45)]"
+                  className="flex min-h-12 items-center gap-3 rounded-md bg-bg px-4 py-2 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.1)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.45)]"
                 >
                   <WalletMark name={w.name} icon={w.icon} />
-                  <span>
-                    <span className="block text-sm font-semibold">{w.name}</span>
-                    <span className="text-xs text-faint">{t.wallet.detected}</span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold leading-tight">{w.name}</span>
+                    <span className="text-xs leading-tight text-faint">{t.wallet.detected}</span>
                   </span>
                 </button>
               ))}
@@ -284,12 +284,12 @@ export function WalletChoices({ className }: { className?: string }) {
               type="button"
               disabled={connecting}
               onClick={() => void connect(w.id)}
-              className="flex h-14 items-center gap-3 rounded-md bg-bg px-4 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.1)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.45)]"
+              className="flex min-h-12 items-center gap-3 rounded-md bg-bg px-4 py-2 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.1)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.45)]"
             >
               <WalletMark name={w.name} icon={w.icon} />
-              <span>
-                <span className="block text-sm font-semibold">{w.name}</span>
-                <span className="text-xs text-faint">{t.wallet.detected}</span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold leading-tight">{w.name}</span>
+                <span className="text-xs leading-tight text-faint">{t.wallet.detected}</span>
               </span>
             </button>
           ))}
@@ -311,12 +311,12 @@ export function WalletChoices({ className }: { className?: string }) {
                 if (injected) void connect(w.id);
                 else openWalletInstallOrApp(w.id, w.installUrl);
               }}
-              className="flex h-12 items-center gap-3 rounded-md bg-bg px-3 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.35)]"
+              className="flex min-h-12 items-center gap-3 rounded-md bg-bg px-3 py-2 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.35)]"
             >
               <WalletMark name={w.name} mark={w.mark} />
-              <span>
-                <span className="block text-sm font-semibold">{w.name}</span>
-                <span className="text-xs text-faint">
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold leading-tight">{w.name}</span>
+                <span className="text-xs leading-tight text-faint">
                   {injected ? t.wallet.detected : mobile ? t.wallet.open : t.wallet.install}
                 </span>
               </span>

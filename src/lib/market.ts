@@ -15,6 +15,14 @@ export type VolumeWindow = {
   value: number;
 };
 
+export type MarketPool = {
+  dex: string;
+  quote: string;
+  volume: number;
+  liquidity: number;
+  url: string;
+};
+
 export type MarketQuote = {
   priceUsd: number;
   liquidity: number;
@@ -24,8 +32,11 @@ export type MarketQuote = {
   dex: string;
   txns: number;
   pairUrl: string;
+  solscanUrl: string;
+  fdv: number;
   candles: Candle[];
   windows: VolumeWindow[];
+  pools: MarketPool[];
 };
 
 const USDC = SITE.usdcMint.toLowerCase();
@@ -40,19 +51,13 @@ type DexPair = {
   url?: string;
   pairAddress?: string;
   priceUsd?: string;
+  fdv?: number;
+  marketCap?: number;
   liquidity?: { usd?: number };
   volume?: { h24?: number; h6?: number; h1?: number; m5?: number };
   priceChange?: { h24?: number };
   txns?: { h24?: { buys?: number; sells?: number } };
   quoteToken?: { address?: string; symbol?: string };
-};
-
-type RayPool = {
-  data?: Array<{
-    price?: number;
-    tvl?: number;
-    day?: { volume?: number };
-  }>;
 };
 
 async function getJson<T>(url: string): Promise<T | null> {
@@ -147,48 +152,63 @@ function changeFromCandles(candles: Candle[]) {
 }
 
 async function loadMarket(): Promise<MarketQuote | null> {
-  const [dex, candles, ray] = await Promise.all([
+  const [dex, candles] = await Promise.all([
     getJson<{ pairs?: DexPair[] }>(
       `https://api.dexscreener.com/latest/dex/tokens/${SITE.mint}`,
     ),
     loadCandles(),
-    getJson<RayPool>(`https://api-v3.raydium.io/pools/info/ids?ids=${SITE.usdcPair}`),
   ]);
 
   const pairs = (dex?.pairs ?? []).filter((p) => p.chainId === "solana" && p.priceUsd);
+  if (!pairs.length && !candles.length) return null;
+
   const usdcPairs = pairs.filter((p) => p.quoteToken?.address?.toLowerCase() === USDC);
-  const bestUsdc =
-    [...usdcPairs].sort((a, b) => (b.volume?.h24 ?? 0) - (a.volume?.h24 ?? 0))[0] ??
-    usdcPairs[0];
-  const pool = ray?.data?.[0];
+  const byLiq = [...pairs].sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0));
+  const byVol = [...pairs].sort((a, b) => (b.volume?.h24 ?? 0) - (a.volume?.h24 ?? 0));
+  const priced =
+    [...usdcPairs].sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0))[0] ??
+    byLiq[0];
 
   const lastClose = candles.at(-1)?.c;
-  const priceUsd = Number(bestUsdc?.priceUsd ?? pool?.price ?? lastClose ?? 0);
-  if (!priceUsd && !candles.length) return null;
+  const priceUsd = Number(priced?.priceUsd ?? lastClose ?? 0);
 
-  const buys = bestUsdc?.txns?.h24?.buys ?? 0;
-  const sells = bestUsdc?.txns?.h24?.sells ?? 0;
-  const volume =
-    bestUsdc?.volume?.h24 ||
-    pool?.day?.volume ||
-    sumVolume(candles, 24);
+  const volOf = (key: "m5" | "h1" | "h6" | "h24") =>
+    pairs.reduce((s, p) => s + (p.volume?.[key] ?? 0), 0);
+  const volume = volOf("h24") || sumVolume(candles, 24);
+  const liquidity = pairs.reduce((s, p) => s + (p.liquidity?.usd ?? 0), 0);
+  const txns = pairs.reduce((s, p) => {
+    const t = p.txns?.h24;
+    return s + (t?.buys ?? 0) + (t?.sells ?? 0);
+  }, 0);
+  const dexes = [...new Set(pairs.map((p) => p.dexId).filter(Boolean))] as string[];
+
+  const pools: MarketPool[] = byVol.slice(0, 8).map((p) => ({
+    dex: p.dexId ?? "raydium",
+    quote: p.quoteToken?.symbol ?? "—",
+    volume: p.volume?.h24 ?? 0,
+    liquidity: p.liquidity?.usd ?? 0,
+    url: p.url ?? SITE.dexscreener,
+  }));
 
   return {
     priceUsd,
-    liquidity: bestUsdc?.liquidity?.usd || pool?.tvl || 0,
+    liquidity,
     volume,
-    change: bestUsdc?.priceChange?.h24 || changeFromCandles(candles),
-    pair: `FLY / ${bestUsdc?.quoteToken?.symbol ?? "USDC"}`,
-    dex: bestUsdc?.dexId ?? "raydium",
-    txns: buys + sells,
-    pairUrl: bestUsdc?.url ?? SITE.dexscreener,
+    change: priced?.priceChange?.h24 || changeFromCandles(candles),
+    pair: `${pairs.length} pools`,
+    dex: dexes.join(" · ") || "raydium",
+    txns,
+    pairUrl: priced?.url ?? SITE.dexscreener,
+    solscanUrl: SITE.solscanToken,
+    fdv: Number(priced?.fdv ?? priced?.marketCap ?? 0) || 0,
     candles,
     windows: [
-      { key: "m5", value: bestUsdc?.volume?.m5 || sumVolume(candles, 1) / 12 },
-      { key: "h1", value: bestUsdc?.volume?.h1 || sumVolume(candles, 1) },
-      { key: "h6", value: bestUsdc?.volume?.h6 || sumVolume(candles, 6) },
-      { key: "h24", value: bestUsdc?.volume?.h24 || volume },
+      { key: "m5", value: volOf("m5") || sumVolume(candles, 1) / 12 },
+      { key: "h1", value: volOf("h1") || sumVolume(candles, 1) },
+      { key: "h6", value: volOf("h6") || sumVolume(candles, 6) },
+      { key: "h24", value: volume },
     ],
+    pools,
   };
 }
 
