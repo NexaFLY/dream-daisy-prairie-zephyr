@@ -18,6 +18,7 @@ import { cn, copyText, shortAddr } from "@/lib/utils";
 const NAV = [
   { href: "/associations", key: "associations" as const },
   { href: "/#swap", key: "swap" as const },
+  { href: "/#pools", key: "pools" as const },
   { href: "/nusd", key: "nusd" as const },
   { href: "/whitepaper", key: "paper" as const },
 ];

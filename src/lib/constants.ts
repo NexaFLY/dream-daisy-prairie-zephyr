@@ -30,6 +30,9 @@ export const SITE = {
   orca: "https://www.orca.so/trade?tokenIn=So11111111111111111111111111111111111111112&tokenOut=9NcUwy9JVekfsY4UA62ZaTprn4TDnJZwp5B6vMAAtkzt",
   raydium:
     "https://raydium.io/swap/?inputMint=sol&outputMint=9NcUwy9JVekfsY4UA62ZaTprn4TDnJZwp5B6vMAAtkzt",
+  raydiumPools: "https://raydium.io/liquidity-pools/",
+  raydiumCreate: "https://raydium.io/liquidity/create-pool/",
+  raydiumPortfolio: "https://raydium.io/portfolio/?tab=liquidity",
   meteora:
     "https://www.meteora.ag/dammv2/8e2r4EsJnALav8efHz9qzyp7cyihds2zREidJU7RwAJT?referrer=home",
   solscanToken:

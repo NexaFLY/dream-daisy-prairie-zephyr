@@ -16,13 +16,21 @@ import {
   Token,
   Transparency,
 } from "@/components/sections";
+import { PoolLab } from "@/components/pool-lab";
 import { listAssociations } from "@/lib/associations";
 import { getMarket, getNusdMarket } from "@/lib/market";
+import { listFlyPools } from "@/lib/pools";
 import { fetchFlyQuote, type FlyQuote } from "@/lib/swap-quote";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
     const [quote, nusdQuote] = await Promise.all([getMarket(), getNusdMarket()]);
+    let flyPools: Awaited<ReturnType<typeof listFlyPools>> = [];
+    try {
+      flyPools = await listFlyPools();
+    } catch {
+      flyPools = [];
+    }
     let orgs: Awaited<ReturnType<typeof listAssociations>> = [];
     try {
       orgs = await listAssociations();
@@ -35,7 +43,7 @@ export const Route = createFileRoute("/")({
     } catch {
       flyQuote = null;
     }
-    return { quote, nusdQuote, orgs, flyQuote };
+    return { quote, nusdQuote, orgs, flyQuote, flyPools };
   },
   component: Home,
 });
@@ -44,7 +52,13 @@ function Home() {
   const data = Route.useLoaderData();
   return (
     <AppFrame>
-      <HomeContent quote={data.quote} nusdQuote={data.nusdQuote} orgs={data.orgs} flyQuote={data.flyQuote} />
+      <HomeContent
+        quote={data.quote}
+        nusdQuote={data.nusdQuote}
+        orgs={data.orgs}
+        flyQuote={data.flyQuote}
+        flyPools={data.flyPools}
+      />
     </AppFrame>
   );
 }
@@ -54,11 +68,13 @@ function HomeContent({
   nusdQuote,
   orgs,
   flyQuote,
+  flyPools,
 }: {
   quote: ReturnType<typeof Route.useLoaderData>["quote"];
   nusdQuote: ReturnType<typeof Route.useLoaderData>["nusdQuote"];
   orgs: ReturnType<typeof Route.useLoaderData>["orgs"];
   flyQuote: FlyQuote | null;
+  flyPools: ReturnType<typeof Route.useLoaderData>["flyPools"];
 }) {
   const onDonate = useDonate();
   return (
@@ -70,6 +86,7 @@ function HomeContent({
       <Network orgs={orgs} />
       <Market quote={quote} />
       <NusdMarket quote={nusdQuote} />
+      <PoolLab pools={flyPools} />
       <SwapSection initialQuote={flyQuote} priceUsd={quote?.priceUsd} />
       <Token />
       <Transparency onDonate={onDonate} />
