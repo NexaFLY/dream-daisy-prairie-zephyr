@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img">
+  <rect width="128" height="128" rx="18" fill="#0b0906"/>
+  <g transform="translate(0,-6)"><circle cx="46" cy="40" r="11" fill="#e8a317"/><circle cx="82" cy="40" r="11" fill="#e8a317"/><circle cx="34" cy="68" r="9" fill="#e8a317"/><circle cx="94" cy="68" r="9" fill="#e8a317"/><circle cx="64" cy="80" r="20" fill="#e8a317"/></g>
+  <text x="64" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#f4ecdf" letter-spacing="1">BF</text>
+</svg>

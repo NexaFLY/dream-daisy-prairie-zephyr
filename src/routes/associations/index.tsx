@@ -25,16 +25,23 @@ function AssociationsPage() {
   const href = !isPending && user ? "/espace" : "/login";
   const [region, setRegion] = useState<Region>("all");
   const [category, setCategory] = useState<Category | "all">("all");
+  const [query, setQuery] = useState("");
 
   const filtered = useMemo(
-    () =>
-      orgs.filter((org) => {
+    () => {
+      const q = query.trim().toLowerCase();
+      return orgs.filter((org) => {
         if (region === "france" && org.country !== "France") return false;
         if (region === "world" && org.country === "France") return false;
         if (category !== "all" && org.category !== category) return false;
+        if (q) {
+          const hay = `${org.name} ${org.tagline} ${org.city} ${org.country} ${org.slug}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
         return true;
-      }),
-    [orgs, region, category],
+      });
+    },
+    [orgs, region, category, query],
   );
 
   const franceCount = orgs.filter((org) => org.country === "France").length;
@@ -84,6 +91,13 @@ function AssociationsPage() {
                 </Chip>
               ))}
             </div>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t.org.searchPh}
+              aria-label={t.org.search}
+              className="mt-4 h-11 w-full max-w-md rounded-md bg-surface px-4 text-sm text-fg shadow-[0_0_0_1px_rgba(244,236,223,0.1)] outline-none placeholder:text-faint focus:shadow-[0_0_0_1px_rgba(255,128,0,0.5)]"
+            />
 
             {filtered.length ? (
               <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

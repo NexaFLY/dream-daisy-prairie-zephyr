@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img">
+  <rect width="128" height="128" rx="18" fill="#0b0906"/>
+  <g transform="translate(0,-6)"><path fill="#ff8000" d="M64 24 C78 42 96 52 96 74 C96 90 82 102 64 102 C46 102 32 90 32 74 C32 58 48 46 56 38 C52 56 64 58 64 24 Z"/></g>
+  <text x="64" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#f4ecdf" letter-spacing="1">HA</text>
+</svg>

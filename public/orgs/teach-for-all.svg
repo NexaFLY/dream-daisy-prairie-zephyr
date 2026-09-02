@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img">
+  <rect width="128" height="128" rx="18" fill="#0b0906"/>
+  <g transform="translate(0,-6)"><path fill="#4a8fd4" d="M22 50 L64 28 L106 50 L64 72 Z"/><path fill="#4a8fd4" opacity=".75" d="M38 60 V86 C38 94 64 104 64 104 C64 104 90 94 90 86 V60 L64 72 Z"/></g>
+  <text x="64" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#f4ecdf" letter-spacing="1">TF</text>
+</svg>
