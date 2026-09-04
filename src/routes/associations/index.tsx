@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { AppFrame } from "@/components/app-frame";
 import { OrgCard } from "@/components/org-card";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { CATEGORIES, listAssociations, type Category } from "@/lib/associations"
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+
+const PAGE_SIZE = 12;
 
 export const Route = createFileRoute("/associations/")({
   loader: () => listAssociations(),
@@ -26,26 +28,37 @@ function AssociationsPage() {
   const [region, setRegion] = useState<Region>("all");
   const [category, setCategory] = useState<Category | "all">("all");
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
 
-  const filtered = useMemo(
-    () => {
-      const q = query.trim().toLowerCase();
-      return orgs.filter((org) => {
-        if (region === "france" && org.country !== "France") return false;
-        if (region === "world" && org.country === "France") return false;
-        if (category !== "all" && org.category !== category) return false;
-        if (q) {
-          const hay = `${org.name} ${org.tagline} ${org.city} ${org.country} ${org.slug}`.toLowerCase();
-          if (!hay.includes(q)) return false;
-        }
-        return true;
-      });
-    },
-    [orgs, region, category, query],
-  );
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return orgs.filter((org) => {
+      if (region === "france" && org.country !== "France") return false;
+      if (region === "world" && org.country === "France") return false;
+      if (category !== "all" && org.category !== category) return false;
+      if (q) {
+        const hay = `${org.name} ${org.tagline} ${org.city} ${org.country} ${org.slug}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [orgs, region, category, query]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const current = Math.min(page, pageCount);
+  const shown = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [region, category, query]);
 
   const franceCount = orgs.filter((org) => org.country === "France").length;
   const worldCount = orgs.length - franceCount;
+
+  function go(next: number) {
+    setPage(next);
+    document.getElementById("org-grid")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <AppFrame>
@@ -100,11 +113,72 @@ function AssociationsPage() {
             />
 
             {filtered.length ? (
-              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filtered.map((org) => (
-                  <OrgCard key={org.slug} org={org} />
-                ))}
-              </div>
+              <>
+                <p id="org-grid" className="mt-8 scroll-mt-24 text-xs text-faint">
+                  {t.org.page} {current} / {pageCount}
+                  {" · "}
+                  {shown.length
+                    ? `${(current - 1) * PAGE_SIZE + 1}–${(current - 1) * PAGE_SIZE + shown.length}`
+                    : 0}{" "}
+                  {t.org.of} {filtered.length}
+                </p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {shown.map((org) => (
+                    <OrgCard key={org.slug} org={org} />
+                  ))}
+                </div>
+                {pageCount > 1 ? (
+                  <nav className="mt-10 flex flex-wrap items-center justify-center gap-2" aria-label={t.org.page}>
+                    <button
+                      type="button"
+                      disabled={current <= 1}
+                      onClick={() => go(current - 1)}
+                      className={cn(
+                        "h-11 rounded-full px-4 text-xs font-semibold",
+                        current <= 1
+                          ? "cursor-not-allowed bg-surface text-faint"
+                          : "bg-surface text-muted shadow-[0_0_0_1px_rgba(244,236,223,0.08)] hover:text-fg",
+                      )}
+                    >
+                      {t.org.prev}
+                    </button>
+                    {pagesAround(current, pageCount).map((n, i) =>
+                      n === "…" ? (
+                        <span key={`gap-${i}`} className="px-1 text-faint">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => go(n)}
+                          className={cn(
+                            "size-11 rounded-full text-xs font-semibold",
+                            n === current
+                              ? "bg-primary text-primary-fg"
+                              : "bg-surface text-muted shadow-[0_0_0_1px_rgba(244,236,223,0.08)] hover:text-fg",
+                          )}
+                        >
+                          {n}
+                        </button>
+                      ),
+                    )}
+                    <button
+                      type="button"
+                      disabled={current >= pageCount}
+                      onClick={() => go(current + 1)}
+                      className={cn(
+                        "h-11 rounded-full px-4 text-xs font-semibold",
+                        current >= pageCount
+                          ? "cursor-not-allowed bg-surface text-faint"
+                          : "bg-surface text-muted shadow-[0_0_0_1px_rgba(244,236,223,0.08)] hover:text-fg",
+                      )}
+                    >
+                      {t.org.next}
+                    </button>
+                  </nav>
+                ) : null}
+              </>
             ) : (
               <p className="mt-12 text-center text-sm text-muted">{t.org.filterEmpty}</p>
             )}
@@ -121,6 +195,18 @@ function AssociationsPage() {
       </main>
     </AppFrame>
   );
+}
+
+function pagesAround(current: number, total: number): Array<number | "…"> {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const set = new Set([1, 2, total - 1, total, current - 1, current, current + 1]);
+  const nums = [...set].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
+  const out: Array<number | "…"> = [];
+  for (const n of nums) {
+    if (out.length && n - (out[out.length - 1] as number) > 1) out.push("…");
+    out.push(n);
+  }
+  return out;
 }
 
 function Chip({
