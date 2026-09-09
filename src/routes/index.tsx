@@ -17,35 +17,29 @@ import {
   Transparency,
 } from "@/components/sections";
 import { PoolLab } from "@/components/pool-lab";
-import { listAssociations } from "@/lib/associations";
+import { listHomeAssociations } from "@/lib/associations";
 import { getMarket, getNusdMarket } from "@/lib/market";
 import { listFlyPools } from "@/lib/pools";
 import { fetchFlyQuote, type FlyQuote } from "@/lib/swap-quote";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const [quote, nusdQuote] = await Promise.all([getMarket(), getNusdMarket()]);
-    let flyPools: Awaited<ReturnType<typeof listFlyPools>> = [];
-    try {
-      flyPools = await listFlyPools();
-    } catch {
-      flyPools = [];
-    }
-    let orgs: Awaited<ReturnType<typeof listAssociations>> = [];
-    try {
-      orgs = await listAssociations();
-    } catch {
-      orgs = [];
-    }
-    let flyQuote: FlyQuote | null = null;
-    try {
-      flyQuote = await fetchFlyQuote("10", "USDC");
-    } catch {
-      flyQuote = null;
-    }
+    const [quote, nusdQuote, flyPools, orgs, flyQuote] = await Promise.all([
+      getMarket().catch(() => null),
+      getNusdMarket().catch(() => null),
+      listFlyPools().catch(() => [] as Awaited<ReturnType<typeof listFlyPools>>),
+      listHomeAssociations().catch(() => [] as Awaited<ReturnType<typeof listHomeAssociations>>),
+      fetchFlyQuote("10", "USDC").catch(() => null as FlyQuote | null),
+    ]);
     return { quote, nusdQuote, orgs, flyQuote, flyPools };
   },
   component: Home,
+  head: () => ({
+    links: [
+      { rel: "preload", href: "/hero.jpg", as: "image" },
+      { rel: "preload", href: "/logo-mark.png", as: "image" },
+    ],
+  }),
 });
 
 function Home() {

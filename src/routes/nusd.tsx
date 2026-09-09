@@ -45,6 +45,10 @@ function NusdPage() {
           <img
             src="/glass.jpg"
             alt=""
+            width={1200}
+            height={900}
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 h-full w-full object-cover opacity-25"
           />
           <div className="absolute inset-0 bg-linear-to-b from-bg/20 via-bg/55 to-bg" />
@@ -52,6 +56,9 @@ function NusdPage() {
             <img
               src="/nusd.png"
               alt="nUSD"
+              width={144}
+              height={144}
+              decoding="async"
               className="size-28 justify-self-center rounded-full outline outline-1 -outline-offset-1 outline-fg/10 md:size-36"
             />
             <div>

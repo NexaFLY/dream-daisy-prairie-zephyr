@@ -124,28 +124,16 @@ function asSource(value: string): GiftSource {
   return value === "nexa" ? "nexa" : "donor";
 }
 
-const PHOTO_SLUGS = new Set([
-  "croix-rouge-francaise",
-  "cicr",
-  "wwf-france",
-  "wwf",
-  "amnesty-france",
-  "amnesty",
-  "oxfam",
-  "unicef-france",
-  "unicef",
-  "msf-france",
-  "msf",
-  "spa",
-  "save-the-children",
-  "pam",
-  "humanite-inclusion",
-  "secours-populaire",
-  "emmaus-france",
-]);
+const LIST_SELECT = `
+  a.id, a.slug, a.name, a.tagline, ''::text as description, a.city, a.country,
+  a.website, a.rna, a.category, a.wallet_address, a.logo_url, a.hosted, a.featured, a.published,
+  a.created_at::text as created_at,
+  coalesce((select count(*)::int from gifts g where g.association_id = a.id), 0) as gift_count
+`;
 
 function mapAssoc(row: AssocRow): Association {
   const slug = row.slug;
+  const rawLogo = row.logo_url ?? "";
   return {
     id: row.id,
     slug,
@@ -158,7 +146,7 @@ function mapAssoc(row: AssocRow): Association {
     rna: row.rna,
     category: asCategory(row.category),
     walletAddress: row.wallet_address,
-    logoUrl: PHOTO_SLUGS.has(slug) ? `/orgs/${slug}.png` : (row.logo_url ?? ""),
+    logoUrl: rawLogo === "/logo.png" ? "/logo-mark.png" : rawLogo,
     hosted: Boolean(row.hosted),
     featured: Boolean(row.featured),
     published: Boolean(row.published),
@@ -239,11 +227,35 @@ export const listAssociations = createServerFn({ method: "GET" }).handler(
   async (): Promise<Association[]> => {
     const sql = await getSql();
     const rows = await sql.query<AssocRow>(
-      `select ${ASSOC_SELECT} from associations a
+      `select ${LIST_SELECT} from associations a
        where a.published = true
        order by a.featured desc, (a.country = 'France') desc, a.name asc`,
     );
     return rows.map(mapAssoc);
+  },
+);
+
+const HOME_SLUGS = [
+  "nexa-fly",
+  "croix-rouge-francaise",
+  "restos-du-coeur",
+  "msf-france",
+  "unicef-france",
+  "cicr",
+] as const;
+
+export const listHomeAssociations = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Association[]> => {
+    const sql = await getSql();
+    const rows = await sql.query<AssocRow>(
+      `select ${LIST_SELECT} from associations a
+       where a.published = true
+         and a.slug in ('nexa-fly','croix-rouge-francaise','restos-du-coeur','msf-france','unicef-france','cicr')`,
+    );
+    const bySlug = new Map(rows.map((row) => [row.slug, mapAssoc(row)]));
+    return HOME_SLUGS.map((slug) => bySlug.get(slug)).filter(
+      (org): org is Association => Boolean(org),
+    );
   },
 );
 

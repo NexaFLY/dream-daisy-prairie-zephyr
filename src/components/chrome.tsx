@@ -47,8 +47,10 @@ export function SiteHeader({ onDonate }: { onDonate: () => void }) {
       <div className="relative z-10 mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
         <a href="/" className="flex items-center gap-3">
           <img
-            src="/logo.png"
+            src="/logo-mark.png"
             alt=""
+            width={36}
+            height={36}
             className="size-9 rounded-sm outline outline-1 -outline-offset-1 outline-fg/10"
           />
           <span className="font-display text-[0.95rem] font-semibold tracking-wide">
@@ -280,7 +282,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="" className="size-9 rounded-sm" />
+            <img src="/logo-mark.png" alt="" width={36} height={36} className="size-9 rounded-sm" />
             <span className="font-display font-semibold">
               NEXA <span className="text-primary">FLY</span>
             </span>

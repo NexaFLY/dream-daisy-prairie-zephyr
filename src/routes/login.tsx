@@ -88,8 +88,10 @@ function Login() {
           <div className="mx-auto w-full max-w-md">
             <Link to="/" className="flex items-center gap-3">
               <img
-                src="/logo.png"
+                src="/logo-mark.png"
                 alt=""
+                width={36}
+                height={36}
                 className="size-9 rounded-sm outline outline-1 -outline-offset-1 outline-fg/10"
               />
               <span className="font-display text-sm font-semibold tracking-wide">

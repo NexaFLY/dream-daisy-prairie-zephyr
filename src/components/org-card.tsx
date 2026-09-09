@@ -5,7 +5,7 @@ import { cn, initials } from "@/lib/utils";
 
 function markSrc(org: Pick<Association, "name" | "logoUrl" | "featured" | "slug">) {
   if (org.logoUrl) return org.logoUrl;
-  if (org.featured) return "/logo.png";
+  if (org.featured) return "/logo-mark.png";
   return "";
 }
 
@@ -26,7 +26,7 @@ export function OrgMark({
           box,
         )}
       >
-        <img src={src} alt="" className="size-full object-contain" />
+        <img src={src} alt="" className="size-full object-contain" loading="lazy" decoding="async" />
       </span>
     );
   }
@@ -58,6 +58,8 @@ export function OrgCard({ org }: { org: Association }) {
           <img
             src={src}
             alt={org.name}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-contain p-6"
           />
         ) : (

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import {
   ArrowUpRight,
   Check,
@@ -9,7 +9,6 @@ import {
   PenLine,
   ShieldCheck,
 } from "lucide-react";
-import { PriceVolumeChart } from "@/components/price-chart";
 import { OrgCard } from "@/components/org-card";
 import { ConnectPanel } from "@/components/wallet-connect";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -18,6 +17,28 @@ import { useI18n } from "@/lib/i18n";
 import type { Association } from "@/lib/associations";
 import type { MarketQuote } from "@/lib/market";
 import { cn, copyText, formatPct, formatPrice, formatUsd, shortAddr } from "@/lib/utils";
+
+const PriceVolumeChart = lazy(() =>
+  import("@/components/price-chart").then((m) => ({ default: m.PriceVolumeChart })),
+);
+
+function ChartSlot({
+  children,
+  compact = false,
+}: {
+  children: ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className={compact ? "h-28 animate-pulse rounded-md bg-bg" : "h-64 animate-pulse rounded-md bg-bg"} />
+      }
+    >
+      {children}
+    </Suspense>
+  );
+}
 
 
 const VOL_LABEL = {
@@ -37,6 +58,33 @@ const VENUE_HREF: Record<string, string> = {
   dexscreener: SITE.dexscreener,
 };
 
+function HeroVideo() {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(
+      "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
+    );
+    const apply = () => setOn(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+  if (!on) return null;
+  return (
+    <video
+      className="hero-video absolute inset-0 h-full w-full object-cover opacity-70"
+      autoPlay
+      muted
+      loop
+      playsInline
+      poster="/hero.jpg"
+      preload="none"
+    >
+      <source src="/hero.mp4" type="video/mp4" />
+    </video>
+  );
+}
+
 export function Hero({ onDonate }: { onDonate: () => void }) {
   const { t } = useI18n();
   const supply = "769,795 FLY";
@@ -47,18 +95,13 @@ export function Hero({ onDonate }: { onDonate: () => void }) {
         <img
           src="/hero.jpg"
           alt=""
+          width={1280}
+          height={720}
+          fetchPriority="high"
+          decoding="async"
           className="h-full w-full object-cover opacity-50"
         />
-        <video
-          className="hero-video absolute inset-0 h-full w-full object-cover opacity-70"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="/hero.jpg"
-        >
-          <source src="/hero.mp4" type="video/mp4" />
-        </video>
+        <HeroVideo />
         <div className="absolute inset-0 bg-linear-to-b from-bg/30 via-bg/55 to-bg" />
       </div>
 
@@ -165,6 +208,10 @@ export function HowItWorks() {
           <img
             src="/glass.jpg"
             alt=""
+            width={1200}
+            height={900}
+            loading="lazy"
+            decoding="async"
             className="aspect-3/4 w-full object-cover outline outline-1 -outline-offset-1 outline-fg/10"
           />
         </div>
@@ -252,7 +299,11 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
           <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
             {t.market.chart}
           </p>
-          {market ? <PriceVolumeChart data={market.candles} /> : null}
+          {market ? (
+            <ChartSlot>
+              <PriceVolumeChart data={market.candles} />
+            </ChartSlot>
+          ) : null}
           {market ? (
             <div className="mt-4 grid grid-cols-4 gap-2">
               {market.windows.map((w) => (
@@ -400,7 +451,11 @@ export function NusdMarket({
           <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
             {c.chart}
           </p>
-          {market ? <PriceVolumeChart data={market.candles} compact peg /> : null}
+          {market ? (
+            <ChartSlot compact>
+              <PriceVolumeChart data={market.candles} compact peg />
+            </ChartSlot>
+          ) : null}
           {market ? (
             <div className="mt-4 grid grid-cols-4 gap-2">
               {market.windows.map((w) => (

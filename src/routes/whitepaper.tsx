@@ -25,6 +25,9 @@ function WhitepaperPage() {
           <img
             src="/hero.jpg"
             alt=""
+            width={1280}
+            height={720}
+            decoding="async"
             className="absolute inset-0 h-full w-full object-cover opacity-35"
           />
           <div className="absolute inset-0 bg-linear-to-b from-bg/30 via-bg/65 to-bg" />

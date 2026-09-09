@@ -28,7 +28,7 @@ export function AppErrorComponent({ error }: ErrorComponentProps) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-bg px-6 text-center text-fg">
       <img
-        src="/logo.png"
+        src="/logo-mark.png"
         alt=""
         className="size-12 rounded-md outline outline-1 -outline-offset-1 outline-fg/10"
       />
