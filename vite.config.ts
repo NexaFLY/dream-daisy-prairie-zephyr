@@ -168,12 +168,14 @@ export default defineConfig(({ command, isPreview }) => ({
     tailwindcss(),
     tanstackStart({
       router: {
-        // Keep route modules in the main bundle. Lazy `?tsr-split=` chunks
-        // 404 after HMR in the live preview and replace the whole page with
-        // "Failed to fetch dynamically imported module".
-        codeSplittingOptions: {
-          defaultBehavior: [],
-        },
+        // Dev HMR 404s if route modules are split. Production can split.
+        ...(command === "build"
+          ? {}
+          : {
+              codeSplittingOptions: {
+                defaultBehavior: [],
+              },
+            }),
       },
     }),
     ...(command === "build" || isPreview

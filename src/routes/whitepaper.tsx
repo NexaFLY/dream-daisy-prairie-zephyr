@@ -11,6 +11,7 @@ export const Route = createFileRoute("/whitepaper")({
   component: WhitepaperPage,
   head: () => ({
     meta: [{ title: "Whitepaper — Nexa FLY" }],
+    links: [{ rel: "canonical", href: "https://nexafly.org/whitepaper" }],
   }),
 });
 

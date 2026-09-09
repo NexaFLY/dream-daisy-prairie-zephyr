@@ -23,6 +23,7 @@ export const Route = createFileRoute("/nusd")({
   component: NusdPage,
   head: () => ({
     meta: [{ title: "nUSD — Nexa FLY" }],
+    links: [{ rel: "canonical", href: "https://nexafly.org/nusd" }],
   }),
 });
 

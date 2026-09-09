@@ -15,6 +15,7 @@ export const Route = createFileRoute("/associations/")({
   component: AssociationsPage,
   head: () => ({
     meta: [{ title: "Associations — Nexa FLY" }],
+    links: [{ rel: "canonical", href: "https://nexafly.org/associations" }],
   }),
 });
 

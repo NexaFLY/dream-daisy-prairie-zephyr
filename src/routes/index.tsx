@@ -36,6 +36,7 @@ export const Route = createFileRoute("/")({
   component: Home,
   head: () => ({
     links: [
+      { rel: "canonical", href: "https://nexafly.org/" },
       { rel: "preload", href: "/hero.jpg", as: "image" },
       { rel: "preload", href: "/logo-mark.png", as: "image" },
     ],

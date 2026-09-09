@@ -26,13 +26,14 @@ export function AuthSlot({ full }: { full?: boolean }) {
     return (
       <a
         href="/login"
+        aria-label={t.nav.space}
         className={cn(
           "inline-flex h-11 items-center justify-center gap-2 rounded-md bg-transparent px-3 text-sm font-semibold text-fg shadow-[0_0_0_1px_rgba(244,236,223,0.14)] transition-colors duration-150 hover:text-primary",
           full && "w-full",
         )}
       >
-        <Building2 className="size-4" />
-        <span className={cn(!full && "hidden sm:inline")}>{t.nav.space}</span>
+        <Building2 className="size-4" aria-hidden />
+        <span className={cn(!full && "max-sm:sr-only")}>{t.nav.space}</span>
       </a>
     );
   }

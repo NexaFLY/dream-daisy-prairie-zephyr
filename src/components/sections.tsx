@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   ArrowUpRight,
   Check,
@@ -22,6 +22,27 @@ const PriceVolumeChart = lazy(() =>
   import("@/components/price-chart").then((m) => ({ default: m.PriceVolumeChart })),
 );
 
+function useInView<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || on) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setOn(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "240px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [on]);
+  return { ref, on };
+}
+
 function ChartSlot({
   children,
   compact = false,
@@ -29,14 +50,18 @@ function ChartSlot({
   children: ReactNode;
   compact?: boolean;
 }) {
+  const { ref, on } = useInView<HTMLDivElement>();
+  const shell = compact ? "h-28" : "h-64";
   return (
-    <Suspense
-      fallback={
-        <div className={compact ? "h-28 animate-pulse rounded-md bg-bg" : "h-64 animate-pulse rounded-md bg-bg"} />
-      }
-    >
-      {children}
-    </Suspense>
+    <div ref={ref}>
+      {on ? (
+        <Suspense fallback={<div className={`${shell} animate-pulse rounded-md bg-bg`} />}>
+          {children}
+        </Suspense>
+      ) : (
+        <div className={`${shell} rounded-md bg-bg`} />
+      )}
+    </div>
   );
 }
 
