@@ -1,4 +1,4 @@
-import { DonateDialog, SiteFooter, SiteHeader } from "@/components/chrome";
+import { BuyBar, DonateDialog, SiteFooter, SiteHeader } from "@/components/chrome";
 import { WalletPicker } from "@/components/wallet-connect";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
@@ -15,13 +15,14 @@ export function AppFrame({ children }: { children: ReactNode }) {
     <DonateContext.Provider value={() => setDonateOpen(true)}>
       <div className="relative min-h-dvh bg-bg text-fg">
         <div className="grain" aria-hidden />
-        <div className="relative z-10">
+        <div className="relative z-10 pb-20 md:pb-0">
           <SiteHeader onDonate={() => setDonateOpen(true)} />
           {children}
           <SiteFooter />
         </div>
         <DonateDialog open={donateOpen} onOpenChange={setDonateOpen} />
         <WalletPicker />
+        <BuyBar />
       </div>
     </DonateContext.Provider>
   );

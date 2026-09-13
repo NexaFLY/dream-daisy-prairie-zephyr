@@ -1,8 +1,10 @@
 import { ArrowUpRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n";
-import type { PoolRow } from "@/lib/pools";
+import { useInView } from "@/lib/in-view";
+import { listFlyPools, type PoolRow } from "@/lib/pools";
 import { cn, formatUsd } from "@/lib/utils";
 
 function pairLabel(pool: PoolRow) {
@@ -11,20 +13,41 @@ function pairLabel(pool: PoolRow) {
   return `${name(pool.a.mint, pool.a.symbol)} / ${name(pool.b.mint, pool.b.symbol)}`;
 }
 
-export function PoolLab({ pools }: { pools: PoolRow[] }) {
+export function PoolLab({ pools: seed }: { pools?: PoolRow[] }) {
   const { t } = useI18n();
   const c = t.pools;
   const mail = `mailto:${SITE.email}?subject=${encodeURIComponent("Nouveau pool FLY / nUSD")}`;
+  const { ref, on } = useInView<HTMLElement>();
+  const [pools, setPools] = useState<PoolRow[]>(seed ?? []);
+  const [status, setStatus] = useState<"wait" | "load" | "ready">(seed ? "ready" : "wait");
+
+  useEffect(() => {
+    if (seed) {
+      setPools(seed);
+      setStatus("ready");
+      return;
+    }
+    if (!on || status !== "wait") return;
+    setStatus("load");
+    listFlyPools()
+      .then((rows) => {
+        setPools(rows);
+        setStatus("ready");
+      })
+      .catch(() => setStatus("ready"));
+  }, [on, seed, status]);
 
   return (
-    <section id="pools" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20">
+    <section ref={ref} id="pools" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20">
       <div className="text-center">
         <p className="font-mono text-[0.72rem] tracking-[0.2em] text-primary uppercase">{c.tag}</p>
         <h2 className="mt-2 font-display text-display font-semibold">{c.title}</h2>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted">{c.lead}</p>
       </div>
 
-      {pools.length ? (
+      {status !== "ready" ? (
+        <div className="mt-10 h-24 animate-pulse rounded-md bg-surface" />
+      ) : pools.length ? (
         <div className="mt-10 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {pools.map((pool) => (
             <a

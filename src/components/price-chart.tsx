@@ -42,9 +42,9 @@ export function PriceVolumeChart({
   const prices = rows.map((r) => r.c).filter(Number.isFinite);
   const lo = prices.length ? Math.min(...prices) : 0.97;
   const hi = prices.length ? Math.max(...prices) : 1.03;
-  const domain = peg
+  const domain: [number, number] | ["auto", "auto"] = peg
     ? [Math.min(0.97, lo * 0.998), Math.max(1.03, hi * 1.002)]
-    : (["auto", "auto"] as const);
+    : ["auto", "auto"];
 
   return (
     <div className={compact ? "h-28 w-full" : "h-72 w-full"}>

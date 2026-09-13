@@ -38,6 +38,11 @@ export type MarketQuote = {
   traders: number;
   mintDisabled: boolean;
   freezeDisabled: boolean;
+  supply: number;
+  topHolders: number;
+  createdAt: number;
+  buyVolume: number;
+  sellVolume: number;
   candles: Candle[];
   windows: VolumeWindow[];
   pools: MarketPool[];
@@ -154,20 +159,6 @@ async function loadCandles(pool: string): Promise<Candle[]> {
   return candlesFromTrades(trades);
 }
 
-function sumVolume(candles: Candle[], hours: number) {
-  const end = candles.at(-1)?.t ?? 0;
-  const start = end - hours * HOUR;
-  return candles.filter((c) => c.t >= start).reduce((s, c) => s + c.v, 0);
-}
-
-function changeFromCandles(candles: Candle[]) {
-  const last = candles.at(-1);
-  if (!last) return 0;
-  const then = candles.find((c) => c.t >= last.t - 24 * HOUR) ?? candles[0];
-  if (!then || then.o <= 0) return 0;
-  return ((last.c - then.o) / then.o) * 100;
-}
-
 type JupToken = {
   id?: string;
   usdPrice?: number;
@@ -176,6 +167,7 @@ type JupToken = {
   liquidity?: number;
   holderCount?: number;
   circSupply?: number;
+  createdAt?: string;
   stats24h?: {
     buyVolume?: number;
     sellVolume?: number;
@@ -187,6 +179,7 @@ type JupToken = {
   audit?: {
     mintAuthorityDisabled?: boolean;
     freezeAuthorityDisabled?: boolean;
+    topHoldersPercentage?: number;
   };
 };
 
@@ -204,16 +197,15 @@ async function loadTokenMarket(opts: {
   solscanUrl: string;
 }): Promise<MarketQuote | null> {
   const mint = opts.mint.toLowerCase();
-  const [dex, candles, jup] = await Promise.all([
+  const [dex, jup] = await Promise.all([
     getJson<{ pairs?: DexPair[] }>(
       `https://api.dexscreener.com/latest/dex/tokens/${opts.mint}`,
     ),
-    loadCandles(opts.candlePool),
     loadJupToken(opts.mint),
   ]);
 
   const pairs = (dex?.pairs ?? []).filter((p) => p.chainId === "solana" && p.priceUsd);
-  if (!pairs.length && !candles.length) return null;
+  if (!pairs.length && !jup) return null;
 
   const asBase = pairs.filter((p) => addrOf(p.baseToken) === mint);
   const stable = asBase.filter((p) => [USDC, USDT].includes(addrOf(p.quoteToken)));
@@ -225,14 +217,14 @@ async function loadTokenMarket(opts: {
     [...stable].sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0))[0] ??
     byLiq[0];
 
-  const lastClose = candles.at(-1)?.c;
+  const lastClose = 0;
   const priceUsd = Number(priced?.priceUsd ?? jup?.usdPrice ?? lastClose ?? 0);
   const jupVol = (jup?.stats24h?.buyVolume ?? 0) + (jup?.stats24h?.sellVolume ?? 0);
   const jupTx = (jup?.stats24h?.numBuys ?? 0) + (jup?.stats24h?.numSells ?? 0);
 
   const volOf = (key: "m5" | "h1" | "h6" | "h24") =>
     pairs.reduce((s, p) => s + (p.volume?.[key] ?? 0), 0);
-  const volume = volOf("h24") || jupVol || sumVolume(candles, 24);
+  const volume = volOf("h24") || jupVol;
   const liquidity = pairs.reduce((s, p) => s + (p.liquidity?.usd ?? 0), 0) || jup?.liquidity || 0;
   const txns =
     pairs.reduce((s, p) => {
@@ -253,7 +245,7 @@ async function loadTokenMarket(opts: {
     priceUsd,
     liquidity,
     volume,
-    change: priced?.priceChange?.h24 || jup?.stats24h?.priceChange || changeFromCandles(candles),
+    change: priced?.priceChange?.h24 || jup?.stats24h?.priceChange || 0,
     pair: `${pairs.length} pools`,
     dex: dexes.join(" · ") || "raydium",
     txns,
@@ -264,11 +256,16 @@ async function loadTokenMarket(opts: {
     traders: jup?.stats24h?.numTraders ?? 0,
     mintDisabled: Boolean(jup?.audit?.mintAuthorityDisabled),
     freezeDisabled: Boolean(jup?.audit?.freezeAuthorityDisabled),
-    candles,
+    supply: Number(jup?.circSupply ?? 0) || 0,
+    topHolders: Number(jup?.audit?.topHoldersPercentage ?? 0) || 0,
+    createdAt: jup?.createdAt ? Date.parse(jup.createdAt) : 0,
+    buyVolume: jup?.stats24h?.buyVolume ?? 0,
+    sellVolume: jup?.stats24h?.sellVolume ?? 0,
+    candles: [],
     windows: [
-      { key: "m5", value: volOf("m5") || sumVolume(candles, 1) / 12 },
-      { key: "h1", value: volOf("h1") || sumVolume(candles, 1) },
-      { key: "h6", value: volOf("h6") || sumVolume(candles, 6) },
+      { key: "m5", value: volOf("m5") },
+      { key: "h1", value: volOf("h1") },
+      { key: "h6", value: volOf("h6") },
       { key: "h24", value: volume },
     ],
     pools,
@@ -302,3 +299,11 @@ export const getNusdMarket = createServerFn({ method: "GET" }).handler(async () 
     }),
   );
 });
+
+export const getMarketCandles = createServerFn({ method: "GET" })
+  .validator((input: unknown) => {
+    const pool = String((input as { pool?: unknown })?.pool ?? "").trim();
+    if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(pool)) throw new Error("pool");
+    return { pool };
+  })
+  .handler(async ({ data }) => loadCandles(data.pool));

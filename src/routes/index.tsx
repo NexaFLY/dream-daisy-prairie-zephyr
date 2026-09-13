@@ -6,6 +6,7 @@ import {
   Faq,
   Hero,
   HowItWorks,
+  HowToBuy,
   Market,
   Mission,
   Network,
@@ -18,20 +19,16 @@ import {
 } from "@/components/sections";
 import { PoolLab } from "@/components/pool-lab";
 import { listHomeAssociations } from "@/lib/associations";
-import { getMarket, getNusdMarket } from "@/lib/market";
-import { listFlyPools } from "@/lib/pools";
-import { fetchFlyQuote, type FlyQuote } from "@/lib/swap-quote";
+import { getMarket } from "@/lib/market";
+import { useFlyQuote } from "@/lib/use-fly-quote";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const [quote, nusdQuote, flyPools, orgs, flyQuote] = await Promise.all([
+    const [quote, orgs] = await Promise.all([
       getMarket().catch(() => null),
-      getNusdMarket().catch(() => null),
-      listFlyPools().catch(() => [] as Awaited<ReturnType<typeof listFlyPools>>),
       listHomeAssociations().catch(() => [] as Awaited<ReturnType<typeof listHomeAssociations>>),
-      fetchFlyQuote("10", "USDC").catch(() => null as FlyQuote | null),
     ]);
-    return { quote, nusdQuote, orgs, flyQuote, flyPools };
+    return { quote, orgs };
   },
   component: Home,
   head: () => ({
@@ -47,42 +44,32 @@ function Home() {
   const data = Route.useLoaderData();
   return (
     <AppFrame>
-      <HomeContent
-        quote={data.quote}
-        nusdQuote={data.nusdQuote}
-        orgs={data.orgs}
-        flyQuote={data.flyQuote}
-        flyPools={data.flyPools}
-      />
+      <HomeContent quote={data.quote} orgs={data.orgs} />
     </AppFrame>
   );
 }
 
 function HomeContent({
   quote,
-  nusdQuote,
   orgs,
-  flyQuote,
-  flyPools,
 }: {
   quote: ReturnType<typeof Route.useLoaderData>["quote"];
-  nusdQuote: ReturnType<typeof Route.useLoaderData>["nusdQuote"];
   orgs: ReturnType<typeof Route.useLoaderData>["orgs"];
-  flyQuote: FlyQuote | null;
-  flyPools: ReturnType<typeof Route.useLoaderData>["flyPools"];
 }) {
   const onDonate = useDonate();
+  useFlyQuote(quote);
   return (
     <main>
-      <Hero onDonate={onDonate} />
+      <Hero onDonate={onDonate} quote={quote} />
       <Problem />
       <HowItWorks />
       <Mission />
       <Network orgs={orgs} />
       <Market quote={quote} />
-      <NusdMarket quote={nusdQuote} />
-      <PoolLab pools={flyPools} />
-      <SwapSection initialQuote={flyQuote} priceUsd={quote?.priceUsd} />
+      <HowToBuy />
+      <NusdMarket />
+      <PoolLab />
+      <SwapSection priceUsd={quote?.priceUsd} />
       <Token />
       <Transparency onDonate={onDonate} />
       <Projects />

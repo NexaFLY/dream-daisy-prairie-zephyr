@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
 import {
   ArrowUpRight,
   Check,
@@ -8,55 +8,46 @@ import {
   Landmark,
   PenLine,
   ShieldCheck,
+  Wallet,
 } from "lucide-react";
 import { OrgCard } from "@/components/org-card";
 import { ConnectPanel } from "@/components/wallet-connect";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n";
+import { useInView } from "@/lib/in-view";
 import type { Association } from "@/lib/associations";
-import type { MarketQuote } from "@/lib/market";
-import { cn, copyText, formatPct, formatPrice, formatUsd, shortAddr } from "@/lib/utils";
+import { getMarketCandles, getNusdMarket, type Candle, type MarketQuote } from "@/lib/market";
+import { watchSplToken } from "@/lib/watch-token";
+import { cn, copyText, formatCount, formatPct, formatPrice, formatUsd, shortAddr } from "@/lib/utils";
 
 const PriceVolumeChart = lazy(() =>
   import("@/components/price-chart").then((m) => ({ default: m.PriceVolumeChart })),
 );
 
-function useInView<T extends HTMLElement>() {
-  const ref = useRef<T | null>(null);
-  const [on, setOn] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || on) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setOn(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin: "240px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [on]);
-  return { ref, on };
-}
-
-function ChartSlot({
-  children,
+function LiveChart({
+  pool,
   compact = false,
+  peg = false,
 }: {
-  children: ReactNode;
+  pool: string;
   compact?: boolean;
+  peg?: boolean;
 }) {
   const { ref, on } = useInView<HTMLDivElement>();
+  const [candles, setCandles] = useState<Candle[] | null>(null);
+  useEffect(() => {
+    if (!on || candles) return;
+    getMarketCandles({ data: { pool } })
+      .then(setCandles)
+      .catch(() => setCandles([]));
+  }, [on, pool, candles]);
   const shell = compact ? "h-28" : "h-64";
   return (
     <div ref={ref}>
-      {on ? (
+      {on && candles ? (
         <Suspense fallback={<div className={`${shell} animate-pulse rounded-md bg-bg`} />}>
-          {children}
+          <PriceVolumeChart data={candles} compact={compact} peg={peg} />
         </Suspense>
       ) : (
         <div className={`${shell} rounded-md bg-bg`} />
@@ -65,6 +56,53 @@ function ChartSlot({
   );
 }
 
+function CopyMintButton({ mint = SITE.mint }: { mint?: string }) {
+  const { t } = useI18n();
+  const [copied, setCopied] = useState(false);
+  async function onCopy() {
+    await copyText(mint);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1600);
+  }
+  return (
+    <Button size="sm" variant="ghost" onClick={onCopy}>
+      {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+      {copied ? t.token.copied : shortAddr(mint, 4, 4)}
+    </Button>
+  );
+}
+
+function AddWalletButton({
+  mint = SITE.mint,
+  symbol = "FLY",
+  label,
+}: {
+  mint?: string;
+  symbol?: string;
+  label?: string;
+}) {
+  const { t } = useI18n();
+  const [state, setState] = useState<"idle" | "ok" | "fail">("idle");
+  async function onAdd() {
+    try {
+      await watchSplToken({ mint, symbol });
+      setState("ok");
+    } catch {
+      setState("fail");
+    }
+    window.setTimeout(() => setState("idle"), 1800);
+  }
+  return (
+    <Button size="sm" variant="subtle" onClick={onAdd}>
+      <Wallet className="size-3.5" />
+      {state === "ok"
+        ? t.snapshot.added
+        : state === "fail"
+          ? t.snapshot.addFail
+          : (label ?? t.snapshot.addWallet)}
+    </Button>
+  );
+}
 
 const VOL_LABEL = {
   m5: "vol5",
@@ -110,9 +148,17 @@ function HeroVideo() {
   );
 }
 
-export function Hero({ onDonate }: { onDonate: () => void }) {
+export function Hero({
+  onDonate,
+  quote,
+}: {
+  onDonate: () => void;
+  quote?: MarketQuote | null;
+}) {
   const { t } = useI18n();
-  const supply = "769,795 FLY";
+  const supply = quote?.supply
+    ? `${formatCount(quote.supply)} FLY`
+    : "769,795 FLY";
 
   return (
     <section id="top" className="relative isolate overflow-hidden">
@@ -130,7 +176,7 @@ export function Hero({ onDonate }: { onDonate: () => void }) {
         <div className="absolute inset-0 bg-linear-to-b from-bg/30 via-bg/55 to-bg" />
       </div>
 
-      <div className="relative mx-auto grid max-w-6xl gap-10 px-5 pt-16 pb-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:pt-24 lg:pb-28">
+      <div className="relative mx-auto grid max-w-6xl gap-10 px-5 pt-16 pb-36 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:pt-24 lg:pb-28">
         <div>
           <p className="stagger-in inline-flex items-center gap-2 rounded-full bg-bg/50 px-3 py-1.5 font-mono text-[0.68rem] tracking-[0.16em] text-amber uppercase shadow-[0_0_0_1px_rgba(244,236,223,0.12)]">
             <span className="size-1.5 rounded-full bg-primary shadow-[0_0_10px_#ff8000]" />
@@ -167,12 +213,42 @@ export function Hero({ onDonate }: { onDonate: () => void }) {
           <p className="font-mono text-[0.7rem] tracking-[0.18em] text-faint uppercase">
             {t.snapshot.title}
           </p>
-          <dl className="mt-4 divide-y divide-border">
-            <SnapRow label={t.snapshot.symbol} value="FLY" accent />
-            <SnapRow label={t.snapshot.network} value="Solana" />
-            <SnapRow label={t.snapshot.supply} value={supply} />
-            <SnapRow label={t.snapshot.status} value={t.snapshot.statusValue} />
-          </dl>
+          {quote ? (
+            <>
+              <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                {formatPrice(quote.priceUsd)}
+              </p>
+              <p className="mt-1 font-mono text-sm tabular-nums">
+                <span className={quote.change >= 0 ? "text-amber" : "text-primary"}>
+                  {formatPct(quote.change)}
+                </span>
+                <span className="text-faint"> · 24h</span>
+              </p>
+              <dl className="mt-4 divide-y divide-border">
+                <SnapRow label={t.snapshot.mcap} value={quote.fdv ? formatUsd(quote.fdv) : "—"} />
+                <SnapRow
+                  label={t.snapshot.holders}
+                  value={quote.holders ? formatCount(quote.holders) : "—"}
+                />
+                <SnapRow label={t.snapshot.supply} value={supply} />
+                <SnapRow label={t.snapshot.contract} value={shortAddr(SITE.mint, 4, 4)} />
+              </dl>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <a href="/#swap" className={cn(buttonVariants({ size: "sm" }))}>
+                  {t.snapshot.buy}
+                </a>
+                <CopyMintButton />
+                <AddWalletButton />
+              </div>
+            </>
+          ) : (
+            <dl className="mt-4 divide-y divide-border">
+              <SnapRow label={t.snapshot.symbol} value="FLY" accent />
+              <SnapRow label={t.snapshot.network} value="Solana" />
+              <SnapRow label={t.snapshot.supply} value={supply} />
+              <SnapRow label={t.snapshot.status} value={t.snapshot.statusValue} />
+            </dl>
+          )}
         </div>
       </div>
     </section>
@@ -265,6 +341,33 @@ export function HowItWorks() {
   );
 }
 
+export function HowToBuy() {
+  const { t } = useI18n();
+  return (
+    <section id="buy" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20">
+      <Header tag={t.buy.tag} title={t.buy.title} lead={t.buy.lead} />
+      <ol className="mt-10 grid gap-4 md:grid-cols-3">
+        {t.buy.steps.map((step) => (
+          <li
+            key={step.n}
+            className="rounded-lg bg-surface p-6 shadow-[0_0_0_1px_rgba(244,236,223,0.08)]"
+          >
+            <p className="font-mono text-[0.7rem] text-faint">{step.n}</p>
+            <h3 className="mt-2 font-display text-lg font-semibold">{step.title}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{step.body}</p>
+          </li>
+        ))}
+      </ol>
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <a href="/#swap" className={cn(buttonVariants({ variant: "primary", size: "lg" }))}>
+          {t.buy.go}
+        </a>
+        <AddWalletButton label={t.token.addWallet} />
+      </div>
+    </section>
+  );
+}
+
 export function Mission() {
   const { t } = useI18n();
   return (
@@ -298,15 +401,25 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
             />
             <Stat label={t.market.vol} value={formatUsd(market.volume)} />
             <Stat label={t.market.liq} value={formatUsd(market.liquidity)} />
-            <Stat label={t.market.txns} value={market.txns ? market.txns.toLocaleString("en-US") : "—"} />
+            <Stat label={t.market.txns} value={market.txns ? formatCount(market.txns) : "—"} />
             <Stat label={t.market.fdv} value={market.fdv ? formatUsd(market.fdv) : "—"} />
             <Stat
               label={t.market.holders}
-              value={market.holders ? market.holders.toLocaleString("en-US") : "—"}
+              value={market.holders ? formatCount(market.holders) : "—"}
             />
             <Stat
               label={t.market.traders}
-              value={market.traders ? market.traders.toLocaleString("en-US") : "—"}
+              value={market.traders ? formatCount(market.traders) : "—"}
+            />
+            <Stat label={t.market.supply} value={market.supply ? formatCount(market.supply) : "—"} />
+            <Stat
+              label={t.market.top}
+              value={market.topHolders ? formatPct(market.topHolders) : "—"}
+            />
+            <Stat label={t.market.buys} value={market.buyVolume ? formatUsd(market.buyVolume) : "—"} />
+            <Stat
+              label={t.market.sells}
+              value={market.sellVolume ? formatUsd(market.sellVolume) : "—"}
             />
           </div>
         ) : (
@@ -324,11 +437,7 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
           <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
             {t.market.chart}
           </p>
-          {market ? (
-            <ChartSlot>
-              <PriceVolumeChart data={market.candles} />
-            </ChartSlot>
-          ) : null}
+          {market ? <LiveChart pool={SITE.usdcPair} /> : null}
           {market ? (
             <div className="mt-4 grid grid-cols-4 gap-2">
               {market.windows.map((w) => (
@@ -366,6 +475,8 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
           >
             {t.market.swap}
           </a>
+          <CopyMintButton />
+          <AddWalletButton />
         </div>
         {market?.pools?.length ? (
           <div className="mt-6">
@@ -435,18 +546,45 @@ function Stat({
 }
 
 export function NusdMarket({
-  quote,
+  quote: seed = null,
   bare = false,
 }: {
-  quote: MarketQuote | null;
+  quote?: MarketQuote | null;
   bare?: boolean;
 }) {
   const { t } = useI18n();
   const c = t.nusdMarket;
+  const { ref, on } = useInView<HTMLElement>();
+  const [quote, setQuote] = useState<MarketQuote | null>(seed);
+  const [status, setStatus] = useState<"wait" | "load" | "ready">(seed ? "ready" : "wait");
+
+  useEffect(() => {
+    if (seed) {
+      setQuote(seed);
+      setStatus("ready");
+      return;
+    }
+    if (!on || status !== "wait") return;
+    setStatus("load");
+    getNusdMarket()
+      .then((q) => {
+        setQuote(q);
+        setStatus("ready");
+      })
+      .catch(() => {
+        setQuote(null);
+        setStatus("ready");
+      });
+  }, [on, seed, status]);
+
   const market = quote;
 
   return (
-    <section id="nusd-market" className={cn("mx-auto max-w-6xl scroll-mt-24", bare ? "pt-10 pb-6" : "px-5 pb-20")}>
+    <section
+      ref={ref}
+      id="nusd-market"
+      className={cn("mx-auto max-w-6xl scroll-mt-24", bare ? "pt-10 pb-6" : "px-5 pb-20")}
+    >
       {bare ? null : <Header tag={c.tag} title={c.title} lead={c.lead} />}
       <div className={cn("rounded-xl bg-surface p-6 shadow-[0_0_0_1px_rgba(244,236,223,0.08)] md:p-8", !bare && "mt-10")}>
         {market ? (
@@ -461,26 +599,24 @@ export function NusdMarket({
             <Stat label={t.market.liq} value={formatUsd(market.liquidity)} />
             <Stat
               label={t.market.holders}
-              value={market.holders ? market.holders.toLocaleString("en-US") : "—"}
+              value={market.holders ? formatCount(market.holders) : "—"}
             />
             <Stat
               label={t.market.traders}
-              value={market.traders ? market.traders.toLocaleString("en-US") : "—"}
+              value={market.traders ? formatCount(market.traders) : "—"}
             />
           </div>
-        ) : (
+        ) : status === "ready" ? (
           <p className="text-sm text-muted">{t.market.error}</p>
+        ) : (
+          <div className="h-28 animate-pulse rounded-md bg-bg" />
         )}
 
         <div className="mt-6 overflow-hidden rounded-lg bg-bg p-4 shadow-[0_0_0_1px_rgba(244,236,223,0.08)]">
           <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
             {c.chart}
           </p>
-          {market ? (
-            <ChartSlot compact>
-              <PriceVolumeChart data={market.candles} compact peg />
-            </ChartSlot>
-          ) : null}
+          <LiveChart pool={SITE.nusdUsdcPair} compact peg />
           {market ? (
             <div className="mt-4 grid grid-cols-4 gap-2">
               {market.windows.map((w) => (
@@ -582,10 +718,13 @@ export function Token() {
       </div>
       <div className="mt-4 flex flex-col gap-3 rounded-lg bg-surface p-4 shadow-[0_0_0_1px_rgba(244,236,223,0.08)] sm:flex-row sm:items-center sm:justify-between">
         <p className="break-all font-mono text-xs text-muted">{SITE.mint}</p>
-        <Button size="sm" variant="subtle" onClick={onCopy}>
-          {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-          {copied ? t.token.copied : t.token.copy}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="subtle" onClick={onCopy}>
+            {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+            {copied ? t.token.copied : t.token.copy}
+          </Button>
+          <AddWalletButton label={t.token.addWallet} />
+        </div>
       </div>
 
       <p className="mt-10 font-mono text-[0.7rem] tracking-widest text-primary uppercase">

@@ -27,6 +27,8 @@ export const SITE = {
   jupiterPlugin: "https://plugin.jup.ag/plugin-v1.js",
   titan:
     "https://titan.exchange/swap?EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v-9NcUwy9JVekfsY4UA62ZaTprn4TDnJZwp5B6vMAAtkzt",
+  titanSol:
+    "https://titan.exchange/swap?So11111111111111111111111111111111111111112-9NcUwy9JVekfsY4UA62ZaTprn4TDnJZwp5B6vMAAtkzt",
   titanNusd:
     "https://titan.exchange/swap?EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v-711P4haqL2hzDA1KrfWST5QFdigDRymQoLxDGfMGqcDx",
   orca: "https://www.orca.so/trade?tokenIn=So11111111111111111111111111111111111111112&tokenOut=9NcUwy9JVekfsY4UA62ZaTprn4TDnJZwp5B6vMAAtkzt",

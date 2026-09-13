@@ -31,6 +31,11 @@ export function formatPct(n: number) {
   return `${sign}${n.toFixed(2)}%`;
 }
 
+export function formatCount(n: number) {
+  if (!Number.isFinite(n) || n <= 0) return "—";
+  return n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+}
+
 export function formatAmt(n: number, digits = 4) {
   if (!Number.isFinite(n)) return "—";
   if (n === 0) return "0";

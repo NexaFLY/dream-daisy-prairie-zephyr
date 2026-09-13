@@ -15,7 +15,7 @@
   --color-line: #3a3128;
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Unbounded", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 18px;

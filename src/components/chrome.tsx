@@ -12,8 +12,9 @@ import { ConnectButton } from "@/components/wallet-connect";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n";
+import { useFlyQuote } from "@/lib/use-fly-quote";
 import { useWallet } from "@/lib/wallet";
-import { cn, copyText, shortAddr } from "@/lib/utils";
+import { cn, copyText, formatPct, formatPrice, shortAddr } from "@/lib/utils";
 
 const NAV = [
   { href: "/associations", key: "associations" as const },
@@ -71,6 +72,7 @@ export function SiteHeader({ onDonate }: { onDonate: () => void }) {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2">
+          <PriceChip />
           <LangToggle lang={lang} setLang={setLang} />
           <AuthSlot />
           <ConnectButton />
@@ -126,6 +128,25 @@ export function SiteHeader({ onDonate }: { onDonate: () => void }) {
   );
 }
 
+function PriceChip() {
+  const quote = useFlyQuote();
+  if (!quote) {
+    return <span className="hidden h-8 w-28 lg:inline-block" aria-hidden />;
+  }
+  return (
+    <a
+      href="/#market"
+      className="hidden items-center gap-2 rounded-sm bg-surface px-2.5 py-1.5 font-mono text-[0.7rem] tabular-nums shadow-[0_0_0_1px_rgba(244,236,223,0.1)] lg:flex"
+    >
+      <span className="text-faint">FLY</span>
+      <span>{formatPrice(quote.priceUsd)}</span>
+      <span className={quote.change >= 0 ? "text-amber" : "text-primary"}>
+        {formatPct(quote.change)}
+      </span>
+    </a>
+  );
+}
+
 function LangToggle({
   lang,
   setLang,
@@ -149,6 +170,38 @@ function LangToggle({
           {code}
         </button>
       ))}
+    </div>
+  );
+}
+
+export function BuyBar() {
+  const { t } = useI18n();
+  const quote = useFlyQuote();
+  return (
+    <div
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/90 px-4 pt-3 backdrop-blur-xl md:hidden"
+      style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+    >
+      <div className="mx-auto flex max-w-6xl items-center gap-3">
+        <div className="min-w-0">
+          <p className="font-mono text-[0.65rem] tracking-widest text-faint uppercase">FLY</p>
+          <p className="font-display text-sm font-semibold tabular-nums">
+            {quote ? formatPrice(quote.priceUsd) : "—"}
+            {quote ? (
+              <span className={quote.change >= 0 ? "ml-1.5 text-amber" : "ml-1.5 text-primary"}>
+                {" "}
+                {formatPct(quote.change)}
+              </span>
+            ) : null}
+          </p>
+        </div>
+        <a
+          href="/#swap"
+          className={cn(buttonVariants({ size: "sm" }), "ml-auto h-11 px-5")}
+        >
+          {t.snapshot.buy}
+        </a>
+      </div>
     </div>
   );
 }

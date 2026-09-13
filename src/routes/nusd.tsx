@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowUpRight, Check, Copy } from "lucide-react";
+import { ArrowUpRight, Check, Copy, Wallet } from "lucide-react";
 import { useState } from "react";
 import { AppFrame } from "@/components/app-frame";
 import { NusdMarket } from "@/components/sections";
@@ -9,6 +9,7 @@ import { SITE } from "@/lib/constants";
 import { getNusdMarket } from "@/lib/market";
 import { useI18n } from "@/lib/i18n";
 import { cn, copyText } from "@/lib/utils";
+import { watchSplToken } from "@/lib/watch-token";
 
 export const Route = createFileRoute("/nusd")({
   loader: async () => {
@@ -32,11 +33,22 @@ function NusdPage() {
   const c = t.nusdPage;
   const { quote } = Route.useLoaderData();
   const [copied, setCopied] = useState(false);
+  const [watch, setWatch] = useState<"idle" | "ok" | "fail">("idle");
 
   async function onCopy() {
     await copyText(SITE.nusdMint);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
+  }
+
+  async function onWatch() {
+    try {
+      await watchSplToken({ mint: SITE.nusdMint, symbol: "nUSD" });
+      setWatch("ok");
+    } catch {
+      setWatch("fail");
+    }
+    window.setTimeout(() => setWatch("idle"), 1800);
   }
 
   return (
@@ -121,6 +133,14 @@ function NusdPage() {
             <Button size="sm" variant="subtle" className="mt-3" onClick={onCopy}>
               {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
               {copied ? t.token.copied : t.token.copy}
+            </Button>
+            <Button size="sm" variant="ghost" className="mt-2" onClick={onWatch}>
+              <Wallet className="size-3.5" />
+              {watch === "ok"
+                ? t.snapshot.added
+                : watch === "fail"
+                  ? t.snapshot.addFail
+                  : t.snapshot.addWallet}
             </Button>
           </article>
         </div>
@@ -227,7 +247,7 @@ function NusdPage() {
                 className="rounded-lg bg-surface p-6 shadow-[0_0_0_1px_rgba(244,236,223,0.08)]"
               >
                 <h3 className="font-display text-lg font-semibold">{item.t}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted">{item.body}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted">{item.b}</p>
               </article>
             ))}
           </div>
