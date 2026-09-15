@@ -8,16 +8,11 @@ import {
   HowItWorks,
   HowToBuy,
   Market,
-  Mission,
   Network,
-  NusdMarket,
-  Problem,
-  Projects,
-  Team,
+  Stables,
   Token,
   Transparency,
 } from "@/components/sections";
-import { PoolLab } from "@/components/pool-lab";
 import { listHomeAssociations } from "@/lib/associations";
 import { getMarket } from "@/lib/market";
 import { useFlyQuote } from "@/lib/use-fly-quote";
@@ -61,19 +56,14 @@ function HomeContent({
   return (
     <main>
       <Hero onDonate={onDonate} quote={quote} />
-      <Problem />
       <HowItWorks />
-      <Mission />
       <Network orgs={orgs} />
       <Market quote={quote} />
       <HowToBuy />
-      <NusdMarket />
-      <PoolLab />
+      <Stables />
       <SwapSection priceUsd={quote?.priceUsd} />
       <Token />
       <Transparency onDonate={onDonate} />
-      <Projects />
-      <Team />
       <Faq />
       <Contact />
     </main>

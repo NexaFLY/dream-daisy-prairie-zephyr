@@ -8,6 +8,7 @@ export const copy = {
       market: "Marché",
       token: "Token",
       nusd: "nUSD",
+      neur: "nEUR",
       pools: "Pools",
       paper: "Whitepaper",
       transparency: "Transparence",
@@ -101,8 +102,8 @@ export const copy = {
     },
     market: {
       tag: "En direct",
-      title: "FLY, tous les pools.",
-      lead: "Prix, volumes et liquidité additionnés sur toutes les paires (USDC, SOL, nUSD, JUP, USDT).",
+      title: "FLY / USDC.",
+      lead: "Prix et liquidité sur les deux paires essentielles : FLY / USDC et FLY / SOL.",
       price: "Prix",
       liq: "Liquidité",
       vol: "Volume 24h",
@@ -148,6 +149,21 @@ export const copy = {
       lead: "Prix, volume et liquidité de tous les pools nUSD — USDC, USDT, SOL, Bonk, FLY.",
       chart: "Peg nUSD · 1h",
       swap: "Swap USDC → nUSD",
+    },
+    neurMarket: {
+      tag: "Euro interne",
+      title: "nEUR, autour de 1 €.",
+      lead: "Prix, volume et liquidité des pools nEUR — EURC, USDC, nUSD, FLY, SOL.",
+      chart: "Peg nEUR · 1h",
+      swap: "Swap USDC → nEUR",
+    },
+    stables: {
+      tag: "Stables internes",
+      title: "Dollar et euro, sur Solana.",
+      lead: "nUSD et nEUR sont les unités internes de l’association. Pas d’exposition au prix du FLY.",
+      nusd: "1 nUSD ≈ 1 USDC. Dons et pools en dollar.",
+      neur: "1 nEUR ≈ 1 EUR. Dons et pools en euro.",
+      open: "Ouvrir la fiche",
     },
     pools: {
       tag: "Liquidité",
@@ -230,7 +246,7 @@ export const copy = {
         },
         {
           q: "À quoi sert le nUSD ?",
-          a: "nUSD est le stable interne, adossé 1:1 à l’USDC. Il sert aux dons et aux pools. Le carnet public du site lit FLY / USDC, la paire avec le volume qui compte.",
+          a: "nUSD est le dollar interne, adossé 1:1 à l’USDC. nEUR est l’euro interne, adossé à l’EUR. Tous deux servent aux dons et aux pools, sans exposition au prix du FLY.",
         },
         {
           q: "Comment vérifier un don ?",
@@ -374,6 +390,99 @@ export const copy = {
         {
           title: "FLY",
           body: "Le jeton de l’association. Rail de gouvernance, de traçabilité, et de liquidité sur Solana.",
+        },
+      ],
+    },
+    neurPage: {
+      eyebrow: "Stable interne · adossé à l’euro",
+      title: "nEUR, l’euro du rail FLY.",
+      lead: "Nexa EURO est le jeton stable interne en euro. Il sert aux dons et aux pools pour les donateurs et associations en zone euro, avec une parité visée 1:1 avec l’EUR.",
+      backing: "Adossé à l’euro",
+      mint: "Contrat",
+      network: "Réseau",
+      peg: "Parité",
+      pegValue: "1 nEUR ≈ 1 EUR",
+      whyTag: "Rôle",
+      whyTitle: "Pourquoi un euro interne ?",
+      why: "EURC et l’euro bancaire restent le rail externe. nEUR est l’unité interne de Nexa FLY pour les dons en euro — contrôlée par l’association, vérifiable on-chain.",
+      uses: [
+        {
+          title: "Dons",
+          body: "Un donateur en euro peut opérer en nEUR sans convertir en dollar, et sans exposition au prix du FLY.",
+        },
+        {
+          title: "Liquidité",
+          body: "Les pools nEUR / EURC, USDC, nUSD et FLY sont publics. Le peg et les volumes sont affichés ici.",
+        },
+        {
+          title: "Trésorerie",
+          body: "L’association peut loger des fonds en euro tout en restant sur Solana, sous le wallet de transparence.",
+        },
+      ],
+      explorer: "Voir sur Solscan",
+      swap: "Swap USDC → nEUR",
+      titan: "Swap sur Titan",
+      stepsTag: "Obtenir",
+      stepsTitle: "Comment entrer en nEUR.",
+      steps: [
+        {
+          k: "01",
+          t: "Wallet Solana",
+          b: "Phantom, Solflare, Backpack, Ledger — n’importe quel wallet compatible.",
+        },
+        {
+          k: "02",
+          t: "Swap vers nEUR",
+          b: "Le change s’exécute sur Jupiter ou Titan, en public, sur Solana.",
+        },
+        {
+          k: "03",
+          t: "Donner ou fournir de la liquidité",
+          b: "nEUR sert aux dons stables en euro, sans exposition au prix du FLY.",
+        },
+      ],
+      specsTag: "Fiche",
+      specsTitle: "Le contrat, en clair.",
+      specs: [
+        { k: "Nom", v: "Nexa EURO" },
+        { k: "Symbole", v: "nEUR" },
+        { k: "Standard", v: "Solana SPL" },
+        { k: "Parité visée", v: "1 nEUR ≈ 1 EUR" },
+        { k: "Émetteur", v: "Association Nexa FLY" },
+        { k: "Contrôle", v: "L’association, vérifiable on-chain" },
+      ],
+      faqTag: "Questions",
+      faqTitle: "Ce que nEUR n’est pas.",
+      faq: [
+        {
+          t: "nEUR n’est pas de l’EURC",
+          b: "EURC reste l’euro externe (Circle). nEUR est l’unité interne de Nexa FLY, pour dons et pools en euro.",
+        },
+        {
+          t: "Ce n’est pas un dépôt bancaire",
+          b: "Pas de garantie de rendement, pas un compte. Un jeton SPL sur Solana, sous le contrôle de l’association.",
+        },
+        {
+          t: "Il peut évoluer",
+          b: "Nexa peut étendre les usages tout en gardant la parité visée et la transparence on-chain.",
+        },
+      ],
+      notice:
+        "nEUR est un jeton d’utilité interne. Il ne constitue ni un titre financier, ni un conseil, ni une promesse de rendement.",
+      compareTag: "Quatre unités",
+      compareTitle: "USDC, nUSD, nEUR, FLY.",
+      compare: [
+        {
+          title: "USDC",
+          body: "Le dollar externe. La paire FLY / USDC reste le carnet public du site.",
+        },
+        {
+          title: "nUSD",
+          body: "Le dollar interne, adossé 1:1. Dons et pools sans exposition au FLY.",
+        },
+        {
+          title: "nEUR",
+          body: "L’euro interne. Même rôle que nUSD, pour la zone euro.",
         },
       ],
     },
@@ -623,6 +732,7 @@ export const copy = {
       market: "Market",
       token: "Token",
       nusd: "nUSD",
+      neur: "nEUR",
       pools: "Pools",
       paper: "Whitepaper",
       transparency: "Transparency",
@@ -716,8 +826,8 @@ export const copy = {
     },
     market: {
       tag: "Live",
-      title: "FLY, every pool.",
-      lead: "Price, volume and liquidity summed across all pairs (USDC, SOL, nUSD, JUP, USDT).",
+      title: "FLY / USDC.",
+      lead: "Price and liquidity on the two pairs that matter: FLY / USDC and FLY / SOL.",
       price: "Price",
       liq: "Liquidity",
       vol: "24h volume",
@@ -763,6 +873,21 @@ export const copy = {
       lead: "Price, volume and liquidity across every nUSD pool — USDC, USDT, SOL, Bonk, FLY.",
       chart: "nUSD peg · 1h",
       swap: "Swap USDC → nUSD",
+    },
+    neurMarket: {
+      tag: "Internal euro",
+      title: "nEUR, around €1.",
+      lead: "Price, volume and liquidity across nEUR pools — EURC, USDC, nUSD, FLY, SOL.",
+      chart: "nEUR peg · 1h",
+      swap: "Swap USDC → nEUR",
+    },
+    stables: {
+      tag: "Internal stables",
+      title: "Dollar and euro, on Solana.",
+      lead: "nUSD and nEUR are the association’s internal units. No FLY price exposure.",
+      nusd: "1 nUSD ≈ 1 USDC. Gifts and pools in dollars.",
+      neur: "1 nEUR ≈ 1 EUR. Gifts and pools in euros.",
+      open: "Open the page",
     },
     pools: {
       tag: "Liquidity",
@@ -845,7 +970,7 @@ export const copy = {
         },
         {
           q: "What is nUSD?",
-          a: "nUSD is the internal stable, backed 1:1 with USDC, used for gifts and pools. The public book on this site reads FLY / USDC — the pair with the volume that matters.",
+          a: "nUSD is the internal dollar, backed 1:1 with USDC. nEUR is the internal euro, pegged to EUR. Both are for gifts and pools, without FLY price exposure.",
         },
         {
           q: "How do I verify a donation?",
@@ -989,6 +1114,99 @@ export const copy = {
         {
           title: "FLY",
           body: "The association token. Governance, traceability, and liquidity on Solana.",
+        },
+      ],
+    },
+    neurPage: {
+      eyebrow: "Internal stable · euro-backed",
+      title: "nEUR, the euro on the FLY rail.",
+      lead: "Nexa EURO is the internal euro stable. It is built for gifts and pools for euro-area donors and associations, with a 1:1 target against EUR.",
+      backing: "Euro-backed",
+      mint: "Contract",
+      network: "Network",
+      peg: "Peg",
+      pegValue: "1 nEUR ≈ 1 EUR",
+      whyTag: "Role",
+      whyTitle: "Why an internal euro?",
+      why: "EURC and bank euros stay the external rail. nEUR is Nexa FLY’s internal unit for euro gifts — controlled by the nonprofit, verifiable on-chain.",
+      uses: [
+        {
+          title: "Donations",
+          body: "A euro donor can operate in nEUR without converting to dollars, and without FLY price risk.",
+        },
+        {
+          title: "Liquidity",
+          body: "nEUR / EURC, USDC, nUSD and FLY pools are public. Peg and volumes are shown here.",
+        },
+        {
+          title: "Treasury",
+          body: "The association can hold euro funds on Solana, still under the transparency wallet.",
+        },
+      ],
+      explorer: "View on Solscan",
+      swap: "Swap USDC → nEUR",
+      titan: "Swap on Titan",
+      stepsTag: "Get nEUR",
+      stepsTitle: "How to enter in nEUR.",
+      steps: [
+        {
+          k: "01",
+          t: "Solana wallet",
+          b: "Phantom, Solflare, Backpack, Ledger — any compatible wallet.",
+        },
+        {
+          k: "02",
+          t: "Swap to nEUR",
+          b: "The swap runs on Jupiter or Titan, in public, on Solana.",
+        },
+        {
+          k: "03",
+          t: "Give or provide liquidity",
+          b: "nEUR is for stable euro gifts, without FLY price exposure.",
+        },
+      ],
+      specsTag: "Sheet",
+      specsTitle: "The contract, plainly.",
+      specs: [
+        { k: "Name", v: "Nexa EURO" },
+        { k: "Symbol", v: "nEUR" },
+        { k: "Standard", v: "Solana SPL" },
+        { k: "Target peg", v: "1 nEUR ≈ 1 EUR" },
+        { k: "Issuer", v: "Nexa FLY association" },
+        { k: "Control", v: "The association, verifiable on-chain" },
+      ],
+      faqTag: "Questions",
+      faqTitle: "What nEUR is not.",
+      faq: [
+        {
+          t: "nEUR is not EURC",
+          b: "EURC stays the external euro (Circle). nEUR is Nexa FLY’s internal unit for euro gifts and pools.",
+        },
+        {
+          t: "Not a bank deposit",
+          b: "No yield promise, not an account. An SPL token on Solana, under the association’s control.",
+        },
+        {
+          t: "It can evolve",
+          b: "Nexa can extend uses while keeping the target peg and on-chain transparency.",
+        },
+      ],
+      notice:
+        "nEUR is an internal utility token. It is not a security, investment advice, or a return guarantee.",
+      compareTag: "Four units",
+      compareTitle: "USDC, nUSD, nEUR, FLY.",
+      compare: [
+        {
+          title: "USDC",
+          body: "The external dollar. FLY / USDC remains the public book on this site.",
+        },
+        {
+          title: "nUSD",
+          body: "The internal dollar, backed 1:1. Gifts and pools without FLY exposure.",
+        },
+        {
+          title: "nEUR",
+          body: "The internal euro. Same job as nUSD, for the euro area.",
         },
       ],
     },

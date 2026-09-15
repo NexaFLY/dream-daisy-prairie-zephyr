@@ -19,8 +19,8 @@ import { cn, copyText, formatPct, formatPrice, shortAddr } from "@/lib/utils";
 const NAV = [
   { href: "/associations", key: "associations" as const },
   { href: "/#swap", key: "swap" as const },
-  { href: "/#pools", key: "pools" as const },
   { href: "/nusd", key: "nusd" as const },
+  { href: "/neur", key: "neur" as const },
   { href: "/whitepaper", key: "paper" as const },
 ];
 
@@ -384,6 +384,11 @@ export function SiteFooter() {
             <li>
               <a className="text-muted hover:text-primary" href="/nusd">
                 nUSD
+              </a>
+            </li>
+            <li>
+              <a className="text-muted hover:text-primary" href="/neur">
+                nEUR
               </a>
             </li>
             <li>

@@ -300,6 +300,16 @@ export const getNusdMarket = createServerFn({ method: "GET" }).handler(async () 
   );
 });
 
+export const getNeurMarket = createServerFn({ method: "GET" }).handler(async () => {
+  return cached("neur", () =>
+    loadTokenMarket({
+      mint: SITE.neurMint,
+      candlePool: SITE.neurUsdcPair,
+      solscanUrl: SITE.solscanNeur,
+    }),
+  );
+});
+
 export const getMarketCandles = createServerFn({ method: "GET" })
   .validator((input: unknown) => {
     const pool = String((input as { pool?: unknown })?.pool ?? "").trim();

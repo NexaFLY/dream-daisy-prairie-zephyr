@@ -17,7 +17,7 @@ import { SITE } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n";
 import { useInView } from "@/lib/in-view";
 import type { Association } from "@/lib/associations";
-import { getMarketCandles, getNusdMarket, type Candle, type MarketQuote } from "@/lib/market";
+import { getMarketCandles, getNeurMarket, getNusdMarket, type Candle, type MarketQuote } from "@/lib/market";
 import { watchSplToken } from "@/lib/watch-token";
 import { cn, copyText, formatCount, formatPct, formatPrice, formatUsd, shortAddr } from "@/lib/utils";
 
@@ -76,16 +76,20 @@ function AddWalletButton({
   mint = SITE.mint,
   symbol = "FLY",
   label,
+  decimals = 6,
+  image,
 }: {
   mint?: string;
   symbol?: string;
   label?: string;
+  decimals?: number;
+  image?: string;
 }) {
   const { t } = useI18n();
   const [state, setState] = useState<"idle" | "ok" | "fail">("idle");
   async function onAdd() {
     try {
-      await watchSplToken({ mint, symbol });
+      await watchSplToken({ mint, symbol, decimals, image });
       setState("ok");
     } catch {
       setState("fail");
@@ -121,33 +125,6 @@ const VENUE_HREF: Record<string, string> = {
   dexscreener: SITE.dexscreener,
 };
 
-function HeroVideo() {
-  const [on, setOn] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia(
-      "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
-    );
-    const apply = () => setOn(mq.matches);
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
-  if (!on) return null;
-  return (
-    <video
-      className="hero-video absolute inset-0 h-full w-full object-cover opacity-70"
-      autoPlay
-      muted
-      loop
-      playsInline
-      poster="/hero.jpg"
-      preload="none"
-    >
-      <source src="/hero.mp4" type="video/mp4" />
-    </video>
-  );
-}
-
 export function Hero({
   onDonate,
   quote,
@@ -172,7 +149,6 @@ export function Hero({
           decoding="async"
           className="h-full w-full object-cover opacity-50"
         />
-        <HeroVideo />
         <div className="absolute inset-0 bg-linear-to-b from-bg/30 via-bg/55 to-bg" />
       </div>
 
@@ -401,26 +377,6 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
             />
             <Stat label={t.market.vol} value={formatUsd(market.volume)} />
             <Stat label={t.market.liq} value={formatUsd(market.liquidity)} />
-            <Stat label={t.market.txns} value={market.txns ? formatCount(market.txns) : "—"} />
-            <Stat label={t.market.fdv} value={market.fdv ? formatUsd(market.fdv) : "—"} />
-            <Stat
-              label={t.market.holders}
-              value={market.holders ? formatCount(market.holders) : "—"}
-            />
-            <Stat
-              label={t.market.traders}
-              value={market.traders ? formatCount(market.traders) : "—"}
-            />
-            <Stat label={t.market.supply} value={market.supply ? formatCount(market.supply) : "—"} />
-            <Stat
-              label={t.market.top}
-              value={market.topHolders ? formatPct(market.topHolders) : "—"}
-            />
-            <Stat label={t.market.buys} value={market.buyVolume ? formatUsd(market.buyVolume) : "—"} />
-            <Stat
-              label={t.market.sells}
-              value={market.sellVolume ? formatUsd(market.sellVolume) : "—"}
-            />
           </div>
         ) : (
           <p className="text-sm text-muted">{t.market.error}</p>
@@ -478,13 +434,18 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
           <CopyMintButton />
           <AddWalletButton />
         </div>
-        {market?.pools?.length ? (
+        {market ? (() => {
+          const core = ["USDC", "SOL"]
+            .map((q) => market.pools.find((p) => p.quote.toUpperCase() === q))
+            .filter((p): p is NonNullable<typeof p> => Boolean(p));
+          if (!core.length) return null;
+          return (
           <div className="mt-6">
             <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
               {t.market.pools}
             </p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {market.pools.map((pool) => (
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {core.map((pool) => (
                 <a
                   key={`${pool.dex}-${pool.quote}-${pool.url}`}
                   href={pool.url}
@@ -506,7 +467,8 @@ export function Market({ quote }: { quote: MarketQuote | null }) {
               ))}
             </div>
           </div>
-        ) : null}
+          );
+        })() : null}
         {market ? (
           <p className="mt-4 font-mono text-xs text-faint uppercase">
             {t.market.pair} · {market.pair} · {market.dex}
@@ -545,15 +507,24 @@ function Stat({
   );
 }
 
-export function NusdMarket({
+export function StableMarket({
   quote: seed = null,
   bare = false,
+  kind = "nusd",
 }: {
   quote?: MarketQuote | null;
   bare?: boolean;
+  kind?: "nusd" | "neur";
 }) {
   const { t } = useI18n();
-  const c = t.nusdMarket;
+  const neur = kind === "neur";
+  const c = neur ? t.neurMarket : t.nusdMarket;
+  const fetchQuote = neur ? getNeurMarket : getNusdMarket;
+  const candlePool = neur ? SITE.neurUsdcPair : SITE.nusdUsdcPair;
+  const solscan = neur ? SITE.solscanNeur : SITE.solscanNusd;
+  const dex = neur ? SITE.dexscreenerNeur : SITE.dexscreenerNusd;
+  const swap = neur ? SITE.jupiterNeur : SITE.jupiterNusd;
+  const label = neur ? "nEUR" : "nUSD";
   const { ref, on } = useInView<HTMLElement>();
   const [quote, setQuote] = useState<MarketQuote | null>(seed);
   const [status, setStatus] = useState<"wait" | "load" | "ready">(seed ? "ready" : "wait");
@@ -566,7 +537,7 @@ export function NusdMarket({
     }
     if (!on || status !== "wait") return;
     setStatus("load");
-    getNusdMarket()
+    fetchQuote()
       .then((q) => {
         setQuote(q);
         setStatus("ready");
@@ -575,14 +546,14 @@ export function NusdMarket({
         setQuote(null);
         setStatus("ready");
       });
-  }, [on, seed, status]);
+  }, [on, seed, status, fetchQuote]);
 
   const market = quote;
 
   return (
     <section
       ref={ref}
-      id="nusd-market"
+      id={neur ? "neur-market" : "nusd-market"}
       className={cn("mx-auto max-w-6xl scroll-mt-24", bare ? "pt-10 pb-6" : "px-5 pb-20")}
     >
       {bare ? null : <Header tag={c.tag} title={c.title} lead={c.lead} />}
@@ -616,7 +587,7 @@ export function NusdMarket({
           <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
             {c.chart}
           </p>
-          <LiveChart pool={SITE.nusdUsdcPair} compact peg />
+          <LiveChart pool={candlePool} compact peg={!neur} />
           {market ? (
             <div className="mt-4 grid grid-cols-4 gap-2">
               {market.windows.map((w) => (
@@ -633,7 +604,7 @@ export function NusdMarket({
 
         <div className="mt-6 flex flex-wrap gap-3">
           <a
-            href={market?.solscanUrl ?? SITE.solscanNusd}
+            href={market?.solscanUrl ?? solscan}
             target="_blank"
             rel="noreferrer"
             className={cn(buttonVariants({ variant: "ghost" }))}
@@ -641,7 +612,7 @@ export function NusdMarket({
             {t.market.openSolscan} <ArrowUpRight className="size-4" />
           </a>
           <a
-            href={market?.pairUrl ?? SITE.dexscreenerNusd}
+            href={market?.pairUrl ?? dex}
             target="_blank"
             rel="noreferrer"
             className={cn(buttonVariants({ variant: "ghost" }))}
@@ -649,7 +620,7 @@ export function NusdMarket({
             {t.market.openDex} <ArrowUpRight className="size-4" />
           </a>
           <a
-            href={SITE.jupiterNusd}
+            href={swap}
             target="_blank"
             rel="noreferrer"
             className={cn(buttonVariants({ variant: "primary" }))}
@@ -663,8 +634,15 @@ export function NusdMarket({
             <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
               {t.market.pools}
             </p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {market.pools.map((pool) => (
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {market.pools
+                .filter((pool) =>
+                  neur
+                    ? ["EURC", "USDC", "NUSD", "FLY", "SOL"].includes(pool.quote.toUpperCase())
+                    : ["USDC", "USDT", "SOL", "FLY"].includes(pool.quote.toUpperCase()),
+                )
+                .slice(0, 4)
+                .map((pool) => (
                 <a
                   key={`${pool.dex}-${pool.quote}-${pool.url}`}
                   href={pool.url}
@@ -673,7 +651,7 @@ export function NusdMarket({
                   className="flex items-center justify-between rounded-md bg-bg px-3 py-2 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.35)]"
                 >
                   <span>
-                    <span className="block text-sm font-semibold">nUSD / {pool.quote}</span>
+                    <span className="block text-sm font-semibold">{label} / {pool.quote}</span>
                     <span className="font-mono text-[0.65rem] tracking-widest text-faint uppercase">
                       {pool.dex}
                     </span>
@@ -692,6 +670,48 @@ export function NusdMarket({
             {t.market.pair} · {market.pair} · {market.dex}
           </p>
         ) : null}
+      </div>
+    </section>
+  );
+}
+
+export function NusdMarket(props: {
+  quote?: MarketQuote | null;
+  bare?: boolean;
+}) {
+  return <StableMarket kind="nusd" {...props} />;
+}
+
+export function Stables() {
+  const { t } = useI18n();
+  const c = t.stables;
+  const cards = [
+    { href: "/nusd", src: "/nusd.png", title: "nUSD", body: c.nusd },
+    { href: "/neur", src: "/neur.png", title: "nEUR", body: c.neur },
+  ];
+  return (
+    <section id="stables" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-16">
+      <Header tag={c.tag} title={c.title} lead={c.lead} />
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        {cards.map((card) => (
+          <a
+            key={card.href}
+            href={card.href}
+            className="flex items-center gap-4 rounded-xl bg-surface p-5 shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.4)]"
+          >
+            <img
+              src={card.src}
+              alt=""
+              width={64}
+              height={64}
+              className="size-16 rounded-full outline outline-1 -outline-offset-1 outline-fg/10"
+            />
+            <span className="min-w-0">
+              <span className="block font-display text-xl font-semibold">{card.title}</span>
+              <span className="mt-1 block text-sm leading-relaxed text-muted">{card.body}</span>
+            </span>
+          </a>
+        ))}
       </div>
     </section>
   );
