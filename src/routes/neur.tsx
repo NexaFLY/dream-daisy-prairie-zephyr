@@ -87,20 +87,20 @@ function NeurPage() {
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">{c.lead}</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
-                  href={SITE.jupiterNeur}
+                  href={SITE.jupiterNeurPage}
                   target="_blank"
                   rel="noreferrer"
                   className={cn(buttonVariants({ variant: "primary" }))}
                 >
-                  {c.swap} <ArrowUpRight className="size-4" />
+                  {c.jupiter} <ArrowUpRight className="size-4" />
                 </a>
                 <a
-                  href={SITE.titanNeur}
+                  href={SITE.jupiterNeur}
                   target="_blank"
                   rel="noreferrer"
                   className={cn(buttonVariants({ variant: "ghost" }))}
                 >
-                  {c.titan} <ArrowUpRight className="size-4" />
+                  {c.swap} <ArrowUpRight className="size-4" />
                 </a>
                 <a
                   href={SITE.solscanNeur}

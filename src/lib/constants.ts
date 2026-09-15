@@ -28,6 +28,8 @@ export const SITE = {
     "https://jup.ag/swap?sell=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&buy=711P4haqL2hzDA1KrfWST5QFdigDRymQoLxDGfMGqcDx",
   jupiterNeur:
     "https://jup.ag/swap?sell=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&buy=6ubQg2Bw33cRgjFmGZKCLXh2Q1Z8tQrvxBxVbcNmYDko",
+  jupiterNeurPage:
+    "https://jup.ag/tokens/6ubQg2Bw33cRgjFmGZKCLXh2Q1Z8tQrvxBxVbcNmYDko",
   jupiterPlugin: "https://plugin.jup.ag/plugin-v1.js",
   titan:
     "https://titan.exchange/swap?EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v-9NcUwy9JVekfsY4UA62ZaTprn4TDnJZwp5B6vMAAtkzt",

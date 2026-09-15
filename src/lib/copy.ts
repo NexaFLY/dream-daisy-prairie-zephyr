@@ -422,6 +422,7 @@ export const copy = {
       explorer: "Voir sur Solscan",
       swap: "Swap USDC → nEUR",
       titan: "Swap sur Titan",
+      jupiter: "Fiche Jupiter",
       stepsTag: "Obtenir",
       stepsTitle: "Comment entrer en nEUR.",
       steps: [
@@ -1146,6 +1147,7 @@ export const copy = {
       explorer: "View on Solscan",
       swap: "Swap USDC → nEUR",
       titan: "Swap on Titan",
+      jupiter: "Jupiter page",
       stepsTag: "Get nEUR",
       stepsTitle: "How to enter in nEUR.",
       steps: [
