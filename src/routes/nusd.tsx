@@ -6,21 +6,11 @@ import { NusdMarket } from "@/components/sections";
 import { ConnectPanel } from "@/components/wallet-connect";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
-import { getNusdMarket } from "@/lib/market";
 import { useI18n } from "@/lib/i18n";
 import { cn, copyText } from "@/lib/utils";
 import { watchSplToken } from "@/lib/watch-token";
 
 export const Route = createFileRoute("/nusd")({
-  loader: async () => {
-    let quote = null;
-    try {
-      quote = await getNusdMarket();
-    } catch {
-      quote = null;
-    }
-    return { quote };
-  },
   component: NusdPage,
   head: () => ({
     meta: [{ title: "nUSD — Nexa FLY" }],
@@ -31,7 +21,6 @@ export const Route = createFileRoute("/nusd")({
 function NusdPage() {
   const { t } = useI18n();
   const c = t.nusdPage;
-  const { quote } = Route.useLoaderData();
   const [copied, setCopied] = useState(false);
   const [watch, setWatch] = useState<"idle" | "ok" | "fail">("idle");
 
@@ -145,7 +134,7 @@ function NusdPage() {
           </article>
         </div>
 
-        <NusdMarket quote={quote} bare />
+        <NusdMarket bare />
 
         <ConnectPanel className="mt-10" />
 

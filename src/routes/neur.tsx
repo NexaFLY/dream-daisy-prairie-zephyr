@@ -6,21 +6,11 @@ import { StableMarket } from "@/components/sections";
 import { ConnectPanel } from "@/components/wallet-connect";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
-import { getNeurMarket } from "@/lib/market";
 import { useI18n } from "@/lib/i18n";
 import { cn, copyText } from "@/lib/utils";
 import { watchSplToken } from "@/lib/watch-token";
 
 export const Route = createFileRoute("/neur")({
-  loader: async () => {
-    let quote = null;
-    try {
-      quote = await getNeurMarket();
-    } catch {
-      quote = null;
-    }
-    return { quote };
-  },
   component: NeurPage,
   head: () => ({
     meta: [{ title: "nEUR — Nexa FLY" }],
@@ -31,7 +21,6 @@ export const Route = createFileRoute("/neur")({
 function NeurPage() {
   const { t } = useI18n();
   const c = t.neurPage;
-  const { quote } = Route.useLoaderData();
   const [copied, setCopied] = useState(false);
   const [watch, setWatch] = useState<"idle" | "ok" | "fail">("idle");
 
@@ -150,7 +139,7 @@ function NeurPage() {
           </article>
         </div>
 
-        <StableMarket kind="neur" quote={quote} bare />
+        <StableMarket kind="neur" bare />
 
         <ConnectPanel className="mt-10" />
 

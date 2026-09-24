@@ -29,16 +29,8 @@ export const Route = createRootRoute({
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap",
-      },
-      { rel: "preconnect", href: "https://lite-api.jup.ag", crossOrigin: "anonymous" },
-      { rel: "preconnect", href: "https://titan.exchange" },
     ],
-    scripts: [{ src: "/nav-guard.js" }],
+    scripts: [{ src: "/nav-guard.js", defer: true }],
   }),
   component: () => (
     <html lang="fr" className="antialiased" suppressHydrationWarning>

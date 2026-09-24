@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { getMarket, type MarketQuote } from "@/lib/market";
+import type { MarketQuote } from "@/lib/market";
 
 let cache: MarketQuote | null = null;
 let inflight: Promise<MarketQuote | null> | null = null;
 
 function load() {
-  inflight ??= getMarket()
+  inflight ??= import("@/lib/market")
+    .then((mod) => mod.getMarket())
     .then((q) => {
       cache = q;
       return q;

@@ -5,7 +5,6 @@
  * Top-level runs (download/export, local `npm run dev`, deployed sites) noop.
  */
 
-import { z } from "zod";
 import { resolveParentEmbedderOrigin } from "./preview-embedder-origin";
 
 export {
@@ -17,25 +16,40 @@ export {
 export const PREVIEW_BRIDGE_CHANNEL = "grok-preview-bridge" as const;
 export const PREVIEW_BRIDGE_VERSION = 1 as const;
 
-const EnvelopeSchema = z.object({
-  channel: z.literal(PREVIEW_BRIDGE_CHANNEL),
-  version: z.number().int().positive(),
-  type: z.string().min(1),
-});
+type Envelope = {
+  channel: typeof PREVIEW_BRIDGE_CHANNEL;
+  version: number;
+  type: string;
+};
 
-const HelloSchema = EnvelopeSchema.extend({
-  type: z.literal("hello"),
-});
+function asEnvelope(data: unknown): Envelope | null {
+  if (!data || typeof data !== "object") return null;
+  const record = data as Record<string, unknown>;
+  if (record.channel !== PREVIEW_BRIDGE_CHANNEL) return null;
+  if (typeof record.version !== "number" || !Number.isInteger(record.version) || record.version <= 0) {
+    return null;
+  }
+  if (typeof record.type !== "string" || record.type.length < 1) return null;
+  return {
+    channel: PREVIEW_BRIDGE_CHANNEL,
+    version: record.version,
+    type: record.type,
+  };
+}
 
-const NavigateSchema = EnvelopeSchema.extend({
-  type: z.literal("navigate"),
-  path: z.string().min(1),
-});
+function asNavigate(data: unknown): { path: string } | null {
+  if (!asEnvelope(data) || (data as { type?: unknown }).type !== "navigate") return null;
+  const path = (data as { path?: unknown }).path;
+  if (typeof path !== "string" || path.length < 1) return null;
+  return { path };
+}
 
-const HistorySchema = EnvelopeSchema.extend({
-  type: z.literal("history"),
-  delta: z.union([z.literal(-1), z.literal(1)]),
-});
+function asHistory(data: unknown): { delta: -1 | 1 } | null {
+  if (!asEnvelope(data) || (data as { type?: unknown }).type !== "history") return null;
+  const delta = (data as { delta?: unknown }).delta;
+  if (delta !== -1 && delta !== 1) return null;
+  return { delta };
+}
 
 export type PreviewHostBridgeOptions = {
   /** Prefer the app router when available; falls back to history.pushState. */
@@ -171,33 +185,32 @@ export function installPreviewHostBridge(
     if (event.source !== window.parent) return;
     if (event.origin !== parentOrigin) return;
 
-    const envelope = EnvelopeSchema.safeParse(event.data);
-    if (!envelope.success || envelope.data.version !== PREVIEW_BRIDGE_VERSION) return;
+    const envelope = asEnvelope(event.data);
+    if (!envelope || envelope.version !== PREVIEW_BRIDGE_VERSION) return;
 
     // Host re-handshake: it may have (re)mounted after our install-time
     // announce, or asked before we hydrated. Announce again.
-    if (envelope.data.type === "hello") {
-      if (!HelloSchema.safeParse(event.data).success) return;
+    if (envelope.type === "hello") {
       announce();
       return;
     }
 
-    if (envelope.data.type === "navigate") {
-      const parsed = NavigateSchema.safeParse(event.data);
-      if (!parsed.success) return;
-      navigate(parsed.data.path);
+    if (envelope.type === "navigate") {
+      const parsed = asNavigate(event.data);
+      if (!parsed) return;
+      navigate(parsed.path);
       // Router navigations often update location asynchronously; report after a tick.
       queueMicrotask(reportLocation);
       return;
     }
 
-    if (envelope.data.type === "history") {
-      const parsed = HistorySchema.safeParse(event.data);
-      if (!parsed.success) return;
+    if (envelope.type === "history") {
+      const parsed = asHistory(event.data);
+      if (!parsed) return;
       // Do not history.go(-1) off the first entry — that leaves the preview.
-      if (parsed.data.delta === -1 && isAtHistoryRoot()) return;
+      if (parsed.delta === -1 && isAtHistoryRoot()) return;
       // Location sync comes from the popstate listener once history settles.
-      window.history.go(parsed.data.delta);
+      window.history.go(parsed.delta);
     }
   };
 

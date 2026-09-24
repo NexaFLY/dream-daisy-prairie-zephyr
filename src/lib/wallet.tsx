@@ -86,8 +86,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stop = subscribeWallets(scan);
-    const id = window.setInterval(scan, 800);
-    const halt = window.setTimeout(() => window.clearInterval(id), 12_000);
+    const id = window.setInterval(scan, 3000);
+    const halt = window.setTimeout(() => window.clearInterval(id), 6000);
     window.addEventListener("load", scan);
     return () => {
       stop();

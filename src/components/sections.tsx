@@ -145,8 +145,8 @@ export function Hero({
           alt=""
           width={1280}
           height={720}
-          fetchPriority="high"
           decoding="async"
+          fetchPriority="high"
           className="h-full w-full object-cover opacity-50"
         />
         <div className="absolute inset-0 bg-linear-to-b from-bg/30 via-bg/55 to-bg" />
@@ -704,6 +704,8 @@ export function Stables() {
               alt=""
               width={64}
               height={64}
+              loading="lazy"
+              decoding="async"
               className="size-16 rounded-full outline outline-1 -outline-offset-1 outline-fg/10"
             />
             <span className="min-w-0">
