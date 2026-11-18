@@ -12,8 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EspaceRouteImport } from './routes/espace'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as NeurRouteImport } from './routes/neur'
-import { Route as NusdRouteImport } from './routes/nusd'
 import { Route as WhitepaperRouteImport } from './routes/whitepaper'
 import { Route as AssociationsIndexRouteImport } from './routes/associations/index'
 import { Route as AssociationsSlugRouteImport } from './routes/associations/$slug'
@@ -32,16 +30,6 @@ const EspaceRoute = EspaceRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NeurRoute = NeurRouteImport.update({
-  id: '/neur',
-  path: '/neur',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NusdRoute = NusdRouteImport.update({
-  id: '/nusd',
-  path: '/nusd',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WhitepaperRoute = WhitepaperRouteImport.update({
@@ -69,8 +57,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/espace': typeof EspaceRoute
   '/login': typeof LoginRoute
-  '/neur': typeof NeurRoute
-  '/nusd': typeof NusdRoute
   '/whitepaper': typeof WhitepaperRoute
   '/associations/$slug': typeof AssociationsSlugRoute
   '/associations/': typeof AssociationsIndexRoute
@@ -80,8 +66,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/espace': typeof EspaceRoute
   '/login': typeof LoginRoute
-  '/neur': typeof NeurRoute
-  '/nusd': typeof NusdRoute
   '/whitepaper': typeof WhitepaperRoute
   '/associations/$slug': typeof AssociationsSlugRoute
   '/associations': typeof AssociationsIndexRoute
@@ -92,8 +76,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/espace': typeof EspaceRoute
   '/login': typeof LoginRoute
-  '/neur': typeof NeurRoute
-  '/nusd': typeof NusdRoute
   '/whitepaper': typeof WhitepaperRoute
   '/associations/$slug': typeof AssociationsSlugRoute
   '/associations/': typeof AssociationsIndexRoute
@@ -105,8 +87,6 @@ export interface FileRouteTypes {
     | '/'
     | '/espace'
     | '/login'
-    | '/neur'
-    | '/nusd'
     | '/whitepaper'
     | '/associations/$slug'
     | '/associations/'
@@ -116,8 +96,6 @@ export interface FileRouteTypes {
     | '/'
     | '/espace'
     | '/login'
-    | '/neur'
-    | '/nusd'
     | '/whitepaper'
     | '/associations/$slug'
     | '/associations'
@@ -127,8 +105,6 @@ export interface FileRouteTypes {
     | '/'
     | '/espace'
     | '/login'
-    | '/neur'
-    | '/nusd'
     | '/whitepaper'
     | '/associations/$slug'
     | '/associations/'
@@ -139,8 +115,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EspaceRoute: typeof EspaceRoute
   LoginRoute: typeof LoginRoute
-  NeurRoute: typeof NeurRoute
-  NusdRoute: typeof NusdRoute
   WhitepaperRoute: typeof WhitepaperRoute
   AssociationsSlugRoute: typeof AssociationsSlugRoute
   AssociationsIndexRoute: typeof AssociationsIndexRoute
@@ -168,20 +142,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/neur': {
-      id: '/neur'
-      path: '/neur'
-      fullPath: '/neur'
-      preLoaderRoute: typeof NeurRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/nusd': {
-      id: '/nusd'
-      path: '/nusd'
-      fullPath: '/nusd'
-      preLoaderRoute: typeof NusdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/whitepaper': {
@@ -219,8 +179,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EspaceRoute: EspaceRoute,
   LoginRoute: LoginRoute,
-  NeurRoute: NeurRoute,
-  NusdRoute: NusdRoute,
   WhitepaperRoute: WhitepaperRoute,
   AssociationsSlugRoute: AssociationsSlugRoute,
   AssociationsIndexRoute: AssociationsIndexRoute,

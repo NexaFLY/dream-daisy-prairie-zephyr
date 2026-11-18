@@ -17,7 +17,7 @@ import { SITE } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n";
 import { useInView } from "@/lib/in-view";
 import type { Association } from "@/lib/associations";
-import { getMarketCandles, getNeurMarket, getNusdMarket, type Candle, type MarketQuote } from "@/lib/market";
+import { getMarketCandles, type Candle, type MarketQuote } from "@/lib/market";
 import { watchSplToken } from "@/lib/watch-token";
 import { cn, copyText, formatCount, formatPct, formatPrice, formatUsd, shortAddr } from "@/lib/utils";
 
@@ -507,218 +507,6 @@ function Stat({
   );
 }
 
-export function StableMarket({
-  quote: seed = null,
-  bare = false,
-  kind = "nusd",
-}: {
-  quote?: MarketQuote | null;
-  bare?: boolean;
-  kind?: "nusd" | "neur";
-}) {
-  const { t } = useI18n();
-  const neur = kind === "neur";
-  const c = neur ? t.neurMarket : t.nusdMarket;
-  const fetchQuote = neur ? getNeurMarket : getNusdMarket;
-  const candlePool = neur ? SITE.neurUsdcPair : SITE.nusdUsdcPair;
-  const solscan = neur ? SITE.solscanNeur : SITE.solscanNusd;
-  const dex = neur ? SITE.dexscreenerNeur : SITE.dexscreenerNusd;
-  const swap = neur ? SITE.jupiterNeur : SITE.jupiterNusd;
-  const label = neur ? "nEUR" : "nUSD";
-  const { ref, on } = useInView<HTMLElement>();
-  const [quote, setQuote] = useState<MarketQuote | null>(seed);
-  const [status, setStatus] = useState<"wait" | "load" | "ready">(seed ? "ready" : "wait");
-
-  useEffect(() => {
-    if (seed) {
-      setQuote(seed);
-      setStatus("ready");
-      return;
-    }
-    if (!on || status !== "wait") return;
-    setStatus("load");
-    fetchQuote()
-      .then((q) => {
-        setQuote(q);
-        setStatus("ready");
-      })
-      .catch(() => {
-        setQuote(null);
-        setStatus("ready");
-      });
-  }, [on, seed, status, fetchQuote]);
-
-  const market = quote;
-
-  return (
-    <section
-      ref={ref}
-      id={neur ? "neur-market" : "nusd-market"}
-      className={cn("mx-auto max-w-6xl scroll-mt-24", bare ? "pt-10 pb-6" : "px-5 pb-20")}
-    >
-      {bare ? null : <Header tag={c.tag} title={c.title} lead={c.lead} />}
-      <div className={cn("rounded-xl bg-surface p-6 shadow-[0_0_0_1px_rgba(244,236,223,0.08)] md:p-8", !bare && "mt-10")}>
-        {market ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Stat label={t.market.price} value={formatPrice(market.priceUsd)} />
-            <Stat
-              label={t.market.change}
-              value={formatPct(market.change)}
-              tone={Math.abs(market.change) < 0.5 ? "up" : market.change >= 0 ? "up" : "down"}
-            />
-            <Stat label={t.market.vol} value={formatUsd(market.volume)} />
-            <Stat label={t.market.liq} value={formatUsd(market.liquidity)} />
-            <Stat
-              label={t.market.holders}
-              value={market.holders ? formatCount(market.holders) : "—"}
-            />
-            <Stat
-              label={t.market.traders}
-              value={market.traders ? formatCount(market.traders) : "—"}
-            />
-          </div>
-        ) : status === "ready" ? (
-          <p className="text-sm text-muted">{t.market.error}</p>
-        ) : (
-          <div className="h-28 animate-pulse rounded-md bg-bg" />
-        )}
-
-        <div className="mt-6 overflow-hidden rounded-lg bg-bg p-4 shadow-[0_0_0_1px_rgba(244,236,223,0.08)]">
-          <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
-            {c.chart}
-          </p>
-          <LiveChart pool={candlePool} compact peg={!neur} />
-          {market ? (
-            <div className="mt-4 grid grid-cols-4 gap-2">
-              {market.windows.map((w) => (
-                <div key={w.key} className="rounded-sm bg-surface px-2 py-2 text-center">
-                  <p className="font-mono text-[0.65rem] tracking-widest text-faint uppercase">
-                    {t.market[VOL_LABEL[w.key]]}
-                  </p>
-                  <p className="mt-1 font-mono text-xs tabular-nums">{formatUsd(w.value)}</p>
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <a
-            href={market?.solscanUrl ?? solscan}
-            target="_blank"
-            rel="noreferrer"
-            className={cn(buttonVariants({ variant: "ghost" }))}
-          >
-            {t.market.openSolscan} <ArrowUpRight className="size-4" />
-          </a>
-          <a
-            href={market?.pairUrl ?? dex}
-            target="_blank"
-            rel="noreferrer"
-            className={cn(buttonVariants({ variant: "ghost" }))}
-          >
-            {t.market.openDex} <ArrowUpRight className="size-4" />
-          </a>
-          <a
-            href={swap}
-            target="_blank"
-            rel="noreferrer"
-            className={cn(buttonVariants({ variant: "primary" }))}
-          >
-            {c.swap} <ArrowUpRight className="size-4" />
-          </a>
-        </div>
-
-        {market?.pools?.length ? (
-          <div className="mt-6">
-            <p className="font-mono text-[0.68rem] tracking-widest text-faint uppercase">
-              {t.market.pools}
-            </p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {market.pools
-                .filter((pool) =>
-                  neur
-                    ? ["EURC", "USDC", "NUSD", "FLY", "SOL"].includes(pool.quote.toUpperCase())
-                    : ["USDC", "USDT", "SOL", "FLY"].includes(pool.quote.toUpperCase()),
-                )
-                .slice(0, 4)
-                .map((pool) => (
-                <a
-                  key={`${pool.dex}-${pool.quote}-${pool.url}`}
-                  href={pool.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-between rounded-md bg-bg px-3 py-2 text-left shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.35)]"
-                >
-                  <span>
-                    <span className="block text-sm font-semibold">{label} / {pool.quote}</span>
-                    <span className="font-mono text-[0.65rem] tracking-widest text-faint uppercase">
-                      {pool.dex}
-                    </span>
-                  </span>
-                  <span className="text-right">
-                    <span className="block font-mono text-xs tabular-nums">{formatUsd(pool.volume)}</span>
-                    <span className="font-mono text-[0.65rem] text-faint">{formatUsd(pool.liquidity)}</span>
-                  </span>
-                </a>
-              ))}
-            </div>
-          </div>
-        ) : null}
-        {market ? (
-          <p className="mt-4 font-mono text-xs text-faint uppercase">
-            {t.market.pair} · {market.pair} · {market.dex}
-          </p>
-        ) : null}
-      </div>
-    </section>
-  );
-}
-
-export function NusdMarket(props: {
-  quote?: MarketQuote | null;
-  bare?: boolean;
-}) {
-  return <StableMarket kind="nusd" {...props} />;
-}
-
-export function Stables() {
-  const { t } = useI18n();
-  const c = t.stables;
-  const cards = [
-    { href: "/nusd", src: "/nusd.png", title: "nUSD", body: c.nusd },
-    { href: "/neur", src: "/neur.png", title: "nEUR", body: c.neur },
-  ];
-  return (
-    <section id="stables" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-16">
-      <Header tag={c.tag} title={c.title} lead={c.lead} />
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        {cards.map((card) => (
-          <a
-            key={card.href}
-            href={card.href}
-            className="flex items-center gap-4 rounded-xl bg-surface p-5 shadow-[0_0_0_1px_rgba(244,236,223,0.08)] transition-[box-shadow] duration-150 hover:shadow-[0_0_0_1px_rgba(255,128,0,0.4)]"
-          >
-            <img
-              src={card.src}
-              alt=""
-              width={64}
-              height={64}
-              loading="lazy"
-              decoding="async"
-              className="size-16 rounded-full outline outline-1 -outline-offset-1 outline-fg/10"
-            />
-            <span className="min-w-0">
-              <span className="block font-display text-xl font-semibold">{card.title}</span>
-              <span className="mt-1 block text-sm leading-relaxed text-muted">{card.body}</span>
-            </span>
-          </a>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 export function Token() {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
@@ -852,24 +640,28 @@ export function Projects() {
   );
 }
 
-export function Network({ orgs }: { orgs: Association[] }) {
+export function Network() {
   const { t } = useI18n();
-  const headlines = [
-    "nexa-fly",
-    "croix-rouge-francaise",
-    "restos-du-coeur",
-    "msf-france",
-    "unicef-france",
-    "cicr",
-  ];
-  const picked = headlines
-    .map((slug) => orgs.find((org) => org.slug === slug))
-    .filter((org): org is Association => Boolean(org));
-  const shown = (picked.length >= 6 ? picked : [...picked, ...orgs.filter((org) => !headlines.includes(org.slug))]).slice(0, 6);
+  const { ref, on } = useInView<HTMLElement>("400px");
+  const [orgs, setOrgs] = useState<Association[] | null>(null);
+  useEffect(() => {
+    if (!on || orgs) return;
+    import("@/lib/associations")
+      .then((m) => m.listHomeAssociations())
+      .then(setOrgs)
+      .catch(() => setOrgs([]));
+  }, [on, orgs]);
+  const shown = (orgs ?? []).slice(0, 6);
   return (
-    <section id="associations" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20">
+    <section ref={ref} id="associations" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20">
       <Header tag={t.org.tag} title={t.org.title} lead={t.org.lead} />
-      {orgs.length ? (
+      {orgs === null ? (
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="h-72 animate-pulse rounded-xl bg-surface" />
+          ))}
+        </div>
+      ) : orgs.length ? (
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((org) => (
             <OrgCard key={org.slug} org={org} />

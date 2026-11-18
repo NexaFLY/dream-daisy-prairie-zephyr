@@ -7,7 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { useWallet } from "@/lib/wallet";
 import { areaClass, cn, copyText, fieldClass, shortAddr } from "@/lib/utils";
 
-const TOKENS: GiftToken[] = ["SOL", "USDC", "FLY", "nUSD"];
+const TOKENS: GiftToken[] = ["SOL", "USDC", "FLY"];
 
 export function GiftPanel({
   slug,
