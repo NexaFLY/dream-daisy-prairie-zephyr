@@ -135,7 +135,6 @@ function AssociationBody() {
                 <Balance k="SOL" v={holdings.sol} />
                 <Balance k="USDC" v={holdings.usdc} />
                 <Balance k="FLY" v={holdings.fly} />
-                <Balance k="nUSD" v={holdings.nusd} />
               </div>
             </div>
           ) : null}

@@ -34,3 +34,20 @@
   for = "/*.mp4"
   [headers.values]
     Cache-Control = "public, max-age=604800"
+
+[[redirects]]
+  from = "/nusd"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/neur"
+  to = "/"
+  status = 301
+  force = true
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

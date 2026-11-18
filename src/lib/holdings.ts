@@ -5,10 +5,9 @@ export type Holdings = {
   sol: number;
   fly: number;
   usdc: number;
-  nusd: number;
 };
 
-const EMPTY: Holdings = { sol: 0, fly: 0, usdc: 0, nusd: 0 };
+const EMPTY: Holdings = { sol: 0, fly: 0, usdc: 0 };
 
 const BASE58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 const RPC = "https://api.mainnet-beta.solana.com";
@@ -40,7 +39,6 @@ function fromJupiterPayload(json: unknown): Holdings | null {
     sol,
     fly: pickUi(tokens[SITE.mint]),
     usdc: pickUi(tokens[SITE.usdcMint]),
-    nusd: pickUi(tokens[SITE.nusdMint]),
   };
 }
 
@@ -88,12 +86,6 @@ async function fromRpc(address: string): Promise<Holdings | null> {
         method: "getTokenAccountsByOwner",
         params: [address, { mint: SITE.usdcMint }, { encoding: "jsonParsed" }],
       },
-      {
-        jsonrpc: "2.0",
-        id: 4,
-        method: "getTokenAccountsByOwner",
-        params: [address, { mint: SITE.nusdMint }, { encoding: "jsonParsed" }],
-      },
     ];
     const res = await fetch(RPC, {
       method: "POST",
@@ -108,7 +100,6 @@ async function fromRpc(address: string): Promise<Holdings | null> {
       sol: lamports / 1_000_000_000,
       fly: tokenUi(rows[1]?.result),
       usdc: tokenUi(rows[2]?.result),
-      nusd: tokenUi(rows[3]?.result),
     };
   } catch {
     return null;

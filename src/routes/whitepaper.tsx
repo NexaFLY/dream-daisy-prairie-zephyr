@@ -6,9 +6,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { publicPageHeaders } from "@/lib/cache";
 
 export const Route = createFileRoute("/whitepaper")({
   component: WhitepaperPage,
+  headers: publicPageHeaders(3600),
   head: () => ({
     meta: [{ title: "Whitepaper — Nexa FLY" }],
     links: [{ rel: "canonical", href: "https://nexafly.org/whitepaper" }],

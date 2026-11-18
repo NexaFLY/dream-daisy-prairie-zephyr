@@ -7,12 +7,14 @@ import { CATEGORIES, listAssociations, type Category } from "@/lib/associations"
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { publicPageHeaders } from "@/lib/cache";
 
 const PAGE_SIZE = 12;
 
 export const Route = createFileRoute("/associations/")({
   loader: () => listAssociations(),
   component: AssociationsPage,
+  headers: publicPageHeaders(60),
   head: () => ({
     meta: [{ title: "Associations — Nexa FLY" }],
     links: [{ rel: "canonical", href: "https://nexafly.org/associations" }],

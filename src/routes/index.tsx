@@ -9,21 +9,15 @@ import {
   HowToBuy,
   Market,
   Network,
-  Stables,
   Token,
   Transparency,
 } from "@/components/sections";
-import { listHomeAssociations } from "@/lib/associations";
 import { useFlyQuote } from "@/lib/use-fly-quote";
+import { publicPageHeaders } from "@/lib/cache";
 
 export const Route = createFileRoute("/")({
-  loader: async () => {
-    const orgs = await listHomeAssociations().catch(
-      () => [] as Awaited<ReturnType<typeof listHomeAssociations>>,
-    );
-    return { orgs };
-  },
   component: Home,
+  headers: publicPageHeaders(),
   head: () => ({
     links: [
       { rel: "canonical", href: "https://nexafly.org/" },
@@ -33,29 +27,23 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const data = Route.useLoaderData();
   return (
     <AppFrame>
-      <HomeContent orgs={data.orgs} />
+      <HomeContent />
     </AppFrame>
   );
 }
 
-function HomeContent({
-  orgs,
-}: {
-  orgs: ReturnType<typeof Route.useLoaderData>["orgs"];
-}) {
+function HomeContent() {
   const onDonate = useDonate();
   const quote = useFlyQuote();
   return (
     <main>
       <Hero onDonate={onDonate} quote={quote} />
       <HowItWorks />
-      <Network orgs={orgs} />
+      <Network />
       <Market quote={quote} />
       <HowToBuy />
-      <Stables />
       <SwapSection priceUsd={quote?.priceUsd} />
       <Token />
       <Transparency onDonate={onDonate} />
